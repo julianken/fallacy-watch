@@ -16,7 +16,7 @@ jobs:
       - name: Install dependencies
         working-directory: backend
         run: |
-          uv venv .venv --python 3.11
+          uv venv .venv --python 3.11 --seed
           uv pip install -r requirements.txt -r requirements-dev.txt
       - name: Run checks
         working-directory: backend
