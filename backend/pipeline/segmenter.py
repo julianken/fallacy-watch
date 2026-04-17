@@ -2,7 +2,9 @@ import spacy
 from transformers import pipeline as hf_pipeline
 from functools import lru_cache
 
-_nlp = spacy.load("en_core_web_sm")
+@lru_cache(maxsize=1)
+def _nlp():
+    return spacy.load("en_core_web_sm")
 
 @lru_cache(maxsize=1)
 def _arg_classifier():
@@ -15,7 +17,7 @@ def _arg_classifier():
 def get_argument_spans(text: str) -> list[dict]:
     if not text.strip():
         return []
-    doc = _nlp(text)
+    doc = _nlp()(text)
     sentences = list(doc.sents)
     if not sentences:
         return []
