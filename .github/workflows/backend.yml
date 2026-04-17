@@ -1,0 +1,18 @@
+name: Backend CI
+on:
+  push:
+    paths: ['backend/**']
+  pull_request:
+    paths: ['backend/**']
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv pip install -r backend/requirements.txt --system
+      - run: python -m spacy download en_core_web_sm
+      - run: ruff check backend/
+      - run: pytest backend/tests/ -v -m "not slow"
+        working-directory: backend
