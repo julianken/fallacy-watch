@@ -38,7 +38,7 @@ async def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
         sid = span["id"]
         c = content_by_id.get(sid)
         model_generated = c is not None
-        if not model_generated:
+        if c is None:
             c = _fallback_content([span]).spans[0]
         ch = c.challenge
         spans_out.append(SpanResult(
