@@ -12,7 +12,7 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [runId, setRunId] = useState(0)
-  const { statusOf } = useFallacyCollection(result?.spans ?? [], result?.rules ?? [], runId)
+  const { statusOf, resolve } = useFallacyCollection(result?.spans ?? [], result?.rules ?? [], runId)
 
   async function handleAnalyze(text: string) {
     setLoading(true); setError(null); setInputText(text)
@@ -41,7 +41,7 @@ export default function App() {
               <p style={{ opacity: 0.4, fontSize: '0.8em', marginBottom: 16 }}>
                 {result.meta.fallacy_count} finding{result.meta.fallacy_count !== 1 ? 's' : ''} · {result.meta.processing_ms}ms
               </p>
-              <FindingsList spans={result.spans} rules={result.rules} onStatusChange={() => {}} />
+              <FindingsList spans={result.spans} rules={result.rules} resolve={resolve} statusOf={statusOf} />
             </>
       )}
     </div>
