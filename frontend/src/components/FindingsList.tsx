@@ -9,8 +9,9 @@ export function FindingsList({ spans, rules, onStatusChange }: Props) {
   const { resolve, statusOf } = useFallacyCollection(spans, rules, 0)
   const [reviewed, setReviewed] = useState<Set<string>>(new Set())
   function handleResolve(id: string, outcome: Resolution) {
-    resolve(id, outcome)
+    const cascades = resolve(id, outcome)
     onStatusChange(id, outcome)
+    for (const c of cascades) onStatusChange(c.id, c.resolution)
   }
   return (
     <div>
