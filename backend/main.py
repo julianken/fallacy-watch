@@ -1,19 +1,13 @@
 import time
-from functools import lru_cache
-import spacy
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from models.span import (
     AnalyzeRequest, AnalyzeResponse, SpanResult,
     Challenge, Question, ChallengeType, DependencyRule, AnalysisMeta,
 )
-from pipeline.segmenter import get_argument_spans
+from pipeline.segmenter import get_argument_spans, _nlp
 from pipeline.classifier import classify_spans
-from pipeline.explainer import generate_content
-
-@lru_cache(maxsize=1)
-def _nlp():
-    return spacy.load("en_core_web_sm")
+from pipeline.explainer import generate_content, _fallback_content
 
 app = FastAPI()
 app.add_middleware(
@@ -43,7 +37,10 @@ async def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
     for span in classified:
         sid = span["id"]
         c = content_by_id.get(sid)
-        ch = c.challenge if c else None
+        model_generated = c is not None
+        if not model_generated:
+            c = _fallback_content([span]).spans[0]
+        ch = c.challenge
         spans_out.append(SpanResult(
             id=sid,
             text=span["text"],
@@ -51,18 +48,18 @@ async def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
             end=span["end"],
             status=span["status"],
             fallacy_type=span["fallacy_type"],
-            explanation=c.explanation if c else "",
+            explanation=c.explanation,
             challenge=Challenge(
-                type=ChallengeType(ch.type if ch else "non_sequitur"),
+                type=ChallengeType(ch.type),
                 question=Question(
-                    text=ch.question.text if ch else "",
-                    yes_label=ch.question.yes_label if ch else "Yes",
-                    no_label=ch.question.no_label if ch else "No",
+                    text=ch.question.text,
+                    yes_label=ch.question.yes_label,
+                    no_label=ch.question.no_label,
                 ),
             ),
-            if_legitimate=c.if_legitimate if c else None,
-            if_fallacy=c.if_fallacy if c else None,
-            content_generated=c is not None,
+            if_legitimate=c.if_legitimate,
+            if_fallacy=c.if_fallacy,
+            content_generated=model_generated,
         ))
 
     rules_out = [
