@@ -72,22 +72,19 @@ def generate_content(
 
     payload = json.dumps({"full_text": full_text, "spans": spans}, ensure_ascii=False)
 
-    for attempt in range(2):
-        try:
-            response = client.chat.completions.parse(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": _SYSTEM_PROMPT},
-                    {"role": "user", "content": payload},
-                ],
-                response_format=ExplainerOutput,
-            )
-            msg = response.choices[0].message
-            if msg.refusal:
-                raise ValueError(f"Model refused: {msg.refusal}")
-            return msg.parsed
-        except Exception as e:
-            logger.warning("explainer attempt %d failed: %s", attempt, e, exc_info=True)
-            if attempt == 1:
-                return _fallback_content(spans)
-    return _fallback_content(spans)
+    try:
+        response = client.chat.completions.parse(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": _SYSTEM_PROMPT},
+                {"role": "user", "content": payload},
+            ],
+            response_format=ExplainerOutput,
+        )
+        msg = response.choices[0].message
+        if msg.refusal:
+            raise ValueError(f"Model refused: {msg.refusal}")
+        return msg.parsed
+    except Exception as e:
+        logger.warning("explainer failed: %s", e, exc_info=True)
+        return _fallback_content(spans)
