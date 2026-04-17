@@ -1,9 +1,12 @@
 import json
+import logging
 import os
 from openai import OpenAI
 from models.span import (ExplainerOutput, ExplainerSpan, ExplainerChallenge,
                           ExplainerQuestion)
 from pipeline.challenge_types import challenge_type_for
+
+logger = logging.getLogger(__name__)
 
 _SYSTEM_PROMPT = """You are a fallacy explanation engine. For each span you receive a text excerpt
 and an assigned fallacy_type. Generate:
@@ -62,13 +65,16 @@ def generate_content(
     client: OpenAI | None = None,
 ) -> ExplainerOutput:
     if client is None:
-        client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if api_key is None:
+            return _fallback_content(spans)
+        client = OpenAI(api_key=api_key)
 
     payload = json.dumps({"full_text": full_text, "spans": spans}, ensure_ascii=False)
 
     for attempt in range(2):
         try:
-            response = client.beta.chat.completions.parse(
+            response = client.chat.completions.parse(
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": _SYSTEM_PROMPT},
@@ -80,7 +86,8 @@ def generate_content(
             if msg.refusal:
                 raise ValueError(f"Model refused: {msg.refusal}")
             return msg.parsed
-        except Exception:
+        except Exception as e:
+            logger.warning("explainer attempt %d failed: %s", attempt, e, exc_info=True)
             if attempt == 1:
                 return _fallback_content(spans)
     return _fallback_content(spans)

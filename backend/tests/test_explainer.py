@@ -29,7 +29,7 @@ def _mock_parsed():
 
 def test_returns_enriched_output():
     mock_client = MagicMock()
-    mock_client.beta.chat.completions.parse.return_value = MagicMock(
+    mock_client.chat.completions.parse.return_value = MagicMock(
         choices=[MagicMock(message=MagicMock(parsed=_mock_parsed(), refusal=None))]
     )
     result = generate_content(SPANS, "Everyone knows politicians lie.", client=mock_client)
@@ -44,10 +44,16 @@ def test_fallback_returns_template_content():
 
 def test_retries_on_failure():
     mock_client = MagicMock()
-    mock_client.beta.chat.completions.parse.side_effect = [
+    mock_client.chat.completions.parse.side_effect = [
         Exception("timeout"),
         MagicMock(choices=[MagicMock(message=MagicMock(parsed=_mock_parsed(), refusal=None))])
     ]
     result = generate_content(SPANS, "text", client=mock_client)
     assert result.spans[0].explanation == "Invokes consensus without evidence."
-    assert mock_client.beta.chat.completions.parse.call_count == 2
+    assert mock_client.chat.completions.parse.call_count == 2
+
+def test_fallback_when_no_api_key(monkeypatch):
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    result = generate_content(SPANS, "text")
+    assert result.spans[0].id == "a"
+    assert result.spans[0].explanation != ""
