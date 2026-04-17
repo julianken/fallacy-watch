@@ -14,9 +14,11 @@ export function useFallacyCollection(
   spans: SpanResult[],
   rules: DependencyRule[]
 ): UseFallacyCollection {
-  const initial: Record<string, Resolution> = {}
-  for (const span of spans) initial[span.id] = 'PENDING'
-  const [resolutions, setResolutions] = useState<Record<string, Resolution>>(initial)
+  const [resolutions, setResolutions] = useState<Record<string, Resolution>>(() => {
+    const init: Record<string, Resolution> = {}
+    for (const span of spans) init[span.id] = 'PENDING'
+    return init
+  })
 
   const getCascades = useCallback(
     (id: string, outcome: Resolution): Cascade[] =>

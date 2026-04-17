@@ -19,11 +19,14 @@ it('resolve CONFIRMED cascades MOOT to dependent', () => {
   expect(result.current.statusOf('b')).toBe('MOOT')
 })
 
-it('resolve CLEARED activates DORMANT dependent', () => {
+it('resolve CLEARED returns activate cascade with PENDING resolution', () => {
   const activateRule: DependencyRule = { ...rule, when: 'CLEARED', effect: 'activate' }
   const { result } = renderHook(() => useFallacyCollection([makeSpan('a'), makeSpan('b')], [activateRule]))
-  act(() => { result.current.resolve('a', 'CLEARED') })
-  expect(result.current.statusOf('b')).toBe('PENDING')
+  let cascades: { id: string; resolution: string; reason: string }[] = []
+  act(() => { cascades = result.current.resolve('a', 'CLEARED') })
+  expect(cascades).toHaveLength(1)
+  expect(cascades[0].id).toBe('b')
+  expect(cascades[0].resolution).toBe('PENDING')
 })
 
 it('isComplete false when spans pending', () => {
