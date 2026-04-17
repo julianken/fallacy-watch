@@ -42,15 +42,13 @@ def test_fallback_returns_template_content():
     assert result.spans[0].explanation != ""
     assert result.dependency_rules == []
 
-def test_retries_on_failure():
+def test_fallback_on_failure():
     mock_client = MagicMock()
-    mock_client.chat.completions.parse.side_effect = [
-        Exception("timeout"),
-        MagicMock(choices=[MagicMock(message=MagicMock(parsed=_mock_parsed(), refusal=None))])
-    ]
+    mock_client.chat.completions.parse.side_effect = Exception("timeout")
     result = generate_content(SPANS, "text", client=mock_client)
-    assert result.spans[0].explanation == "Invokes consensus without evidence."
-    assert mock_client.chat.completions.parse.call_count == 2
+    assert result.spans[0].id == "a"
+    assert result.spans[0].explanation != ""
+    assert mock_client.chat.completions.parse.call_count == 1
 
 def test_fallback_when_no_api_key(monkeypatch):
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
