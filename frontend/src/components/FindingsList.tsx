@@ -6,7 +6,7 @@ import { PossiblyCard } from './PossiblyCard'
 import { MootCard } from './MootCard'
 interface Props { spans: SpanResult[]; rules: DependencyRule[]; onStatusChange: (id: string, r: Resolution) => void }
 export function FindingsList({ spans, rules, onStatusChange }: Props) {
-  const { resolve, statusOf } = useFallacyCollection(spans, rules)
+  const { resolve, statusOf } = useFallacyCollection(spans, rules, 0)
   const [reviewed, setReviewed] = useState<Set<string>>(new Set())
   function handleResolve(id: string, outcome: Resolution) {
     resolve(id, outcome)
