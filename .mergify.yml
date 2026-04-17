@@ -1,0 +1,16 @@
+queue_rules:
+  - name: default
+    merge_conditions:
+      - approved-reviews-by=julianken-bot
+      - check-success=backend
+      - check-success=frontend
+
+pull_request_rules:
+  - name: Add approved PRs to merge queue
+    conditions:
+      - approved-reviews-by=julianken-bot
+      - check-success=backend
+      - check-success=frontend
+    actions:
+      queue:
+        name: default
