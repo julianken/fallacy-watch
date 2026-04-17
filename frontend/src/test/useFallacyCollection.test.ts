@@ -14,14 +14,14 @@ const rule: DependencyRule = {
 }
 
 it('resolve CONFIRMED cascades MOOT to dependent', () => {
-  const { result } = renderHook(() => useFallacyCollection([makeSpan('a'), makeSpan('b')], [rule]))
+  const { result } = renderHook(() => useFallacyCollection([makeSpan('a'), makeSpan('b')], [rule], 0))
   act(() => { result.current.resolve('a', 'CONFIRMED') })
   expect(result.current.statusOf('b')).toBe('MOOT')
 })
 
 it('resolve CLEARED returns activate cascade with PENDING resolution', () => {
   const activateRule: DependencyRule = { ...rule, when: 'CLEARED', effect: 'activate' }
-  const { result } = renderHook(() => useFallacyCollection([makeSpan('a'), makeSpan('b')], [activateRule]))
+  const { result } = renderHook(() => useFallacyCollection([makeSpan('a'), makeSpan('b')], [activateRule], 0))
   let cascades: { id: string; resolution: string; reason: string }[] = []
   act(() => { cascades = result.current.resolve('a', 'CLEARED') })
   expect(cascades).toHaveLength(1)
@@ -30,31 +30,42 @@ it('resolve CLEARED returns activate cascade with PENDING resolution', () => {
 })
 
 it('isComplete false when spans pending', () => {
-  const { result } = renderHook(() => useFallacyCollection([makeSpan('a')], []))
+  const { result } = renderHook(() => useFallacyCollection([makeSpan('a')], [], 0))
   expect(result.current.isComplete()).toBe(false)
 })
 
 it('isComplete true when all resolved', () => {
-  const { result } = renderHook(() => useFallacyCollection([makeSpan('a')], []))
+  const { result } = renderHook(() => useFallacyCollection([makeSpan('a')], [], 0))
   act(() => { result.current.resolve('a', 'CONFIRMED') })
   expect(result.current.isComplete()).toBe(true)
 })
 
 it('previewCascade does not mutate state', () => {
-  const { result } = renderHook(() => useFallacyCollection([makeSpan('a'), makeSpan('b')], [rule]))
+  const { result } = renderHook(() => useFallacyCollection([makeSpan('a'), makeSpan('b')], [rule], 0))
   act(() => { result.current.previewCascade('a', 'CONFIRMED') })
   expect(result.current.statusOf('b')).toBe('PENDING')
 })
 
-it('resets to PENDING when spans change', () => {
+it('resets to PENDING when runId changes (same span count)', () => {
   const { result, rerender } = renderHook(
-    ({ spans, rules }: { spans: SpanResult[]; rules: DependencyRule[] }) =>
-      useFallacyCollection(spans, rules),
-    { initialProps: { spans: [makeSpan('a')], rules: [] } }
+    ({ runId }: { runId: number }) =>
+      useFallacyCollection([makeSpan('a'), makeSpan('b')], [], runId),
+    { initialProps: { runId: 0 } }
   )
   act(() => { result.current.resolve('a', 'CONFIRMED') })
   expect(result.current.statusOf('a')).toBe('CONFIRMED')
-  rerender({ spans: [makeSpan('a'), makeSpan('b')], rules: [] })
+  rerender({ runId: 1 })
   expect(result.current.statusOf('a')).toBe('PENDING')
   expect(result.current.statusOf('b')).toBe('PENDING')
+})
+
+it('does not reset when runId is unchanged', () => {
+  const { result, rerender } = renderHook(
+    ({ runId }: { runId: number }) =>
+      useFallacyCollection([makeSpan('a')], [], runId),
+    { initialProps: { runId: 0 } }
+  )
+  act(() => { result.current.resolve('a', 'CONFIRMED') })
+  rerender({ runId: 0 })
+  expect(result.current.statusOf('a')).toBe('CONFIRMED')
 })

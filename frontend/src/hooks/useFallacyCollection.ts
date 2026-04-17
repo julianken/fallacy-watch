@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import type { SpanResult, DependencyRule, Resolution } from '../types'
 
 interface Cascade { id: string; resolution: Resolution; reason: string }
@@ -12,7 +12,8 @@ interface UseFallacyCollection {
 
 export function useFallacyCollection(
   spans: SpanResult[],
-  rules: DependencyRule[]
+  rules: DependencyRule[],
+  runId: string | number
 ): UseFallacyCollection {
   const [resolutions, setResolutions] = useState<Record<string, Resolution>>(() => {
     const init: Record<string, Resolution> = {}
@@ -20,11 +21,10 @@ export function useFallacyCollection(
     return init
   })
 
-  const spanKey = spans.map(s => s.id).join('\0')
   useEffect(() => {
     setResolutions(Object.fromEntries(spans.map(s => [s.id, 'PENDING' as Resolution])))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [spanKey])
+  }, [runId])
 
   const getCascades = useCallback(
     (id: string, outcome: Resolution): Cascade[] =>
@@ -66,5 +66,8 @@ export function useFallacyCollection(
     [resolutions]
   )
 
-  return { resolve, previewCascade, statusOf, isComplete }
+  return useMemo(
+    () => ({ resolve, previewCascade, statusOf, isComplete }),
+    [resolve, previewCascade, statusOf, isComplete]
+  )
 }
