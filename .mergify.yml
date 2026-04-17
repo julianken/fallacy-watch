@@ -2,23 +2,15 @@ queue_rules:
   - name: default
     merge_conditions:
       - approved-reviews-by=julianken-bot
-      - or:
-        - check-success=backend
-        - check-skipped=backend
-      - or:
-        - check-success=frontend
-        - check-skipped=frontend
+      - check-success=backend
+      - check-success=frontend
 
 pull_request_rules:
   - name: Add approved PRs to merge queue
     conditions:
       - approved-reviews-by=julianken-bot
-      - or:
-        - check-success=backend
-        - check-skipped=backend
-      - or:
-        - check-success=frontend
-        - check-skipped=frontend
+      - check-success=backend
+      - check-success=frontend
     actions:
       queue:
         name: default
