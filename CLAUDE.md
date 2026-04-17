@@ -59,7 +59,7 @@ Copy `.env.example` to `.env` in `backend/` and fill in your key. The app degrad
 - **No server roundtrips after /analyze**: All resolution state lives in the React `useFallacyCollection` hook.
 - **FallacyCollection cascade logic**: Defined in `backend/models/collection.py` (Python) and mirrored in `frontend/src/hooks/useFallacyCollection.ts` (TypeScript). Keep them in sync.
 
-## Build the MAFALDA index (one-time)
+## Build the logical-fallacy index (one-time)
 
 ```bash
 cd backend
@@ -67,7 +67,7 @@ source .venv/bin/activate
 python data/build_index.py
 ```
 
-Outputs `backend/data/mafalda.index` and `backend/data/mafalda_labels.json`. Commit both.
+Outputs `backend/data/logical_fallacy.index` and `backend/data/logical_fallacy_labels.json`. Commit both.
 
 ## Code conventions
 
