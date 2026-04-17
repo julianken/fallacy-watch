@@ -3,6 +3,7 @@ import type { SpanResult, DependencyRule, Resolution } from '../types'
 import { ConfirmedCard } from './ConfirmedCard'
 import { PossiblyCard } from './PossiblyCard'
 import { MootCard } from './MootCard'
+import { ResolvedCard } from './ResolvedCard'
 interface Props {
   spans: SpanResult[]
   rules: DependencyRule[]
@@ -18,6 +19,9 @@ export function FindingsList({ spans, rules, resolve, statusOf }: Props) {
         if (status === 'MOOT' && !reviewed.has(span.id)) {
           const rule = rules.find(r => r.dependent_id === span.id && r.effect === 'moot')
           return <MootCard key={span.id} span={span} reason={rule?.reason ?? 'resolved by cascade'} onReviewAnyway={id => setReviewed(prev => new Set(prev).add(id))} />
+        }
+        if (status === 'CONFIRMED' || status === 'CLEARED') {
+          return <ResolvedCard key={span.id} span={span} outcome={status} />
         }
         return span.status === 'confirmed'
           ? <ConfirmedCard key={span.id} span={span} onResolve={resolve} />
