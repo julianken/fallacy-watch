@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { SpanResult, DependencyRule, Resolution } from '../types'
 
 interface Cascade { id: string; resolution: Resolution; reason: string }
@@ -19,6 +19,12 @@ export function useFallacyCollection(
     for (const span of spans) init[span.id] = 'PENDING'
     return init
   })
+
+  const spanKey = spans.map(s => s.id).join('\0')
+  useEffect(() => {
+    setResolutions(Object.fromEntries(spans.map(s => [s.id, 'PENDING' as Resolution])))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spanKey])
 
   const getCascades = useCallback(
     (id: string, outcome: Resolution): Cascade[] =>

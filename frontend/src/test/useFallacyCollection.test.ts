@@ -45,3 +45,16 @@ it('previewCascade does not mutate state', () => {
   act(() => { result.current.previewCascade('a', 'CONFIRMED') })
   expect(result.current.statusOf('b')).toBe('PENDING')
 })
+
+it('resets to PENDING when spans change', () => {
+  const { result, rerender } = renderHook(
+    ({ spans, rules }: { spans: SpanResult[]; rules: DependencyRule[] }) =>
+      useFallacyCollection(spans, rules),
+    { initialProps: { spans: [makeSpan('a')], rules: [] } }
+  )
+  act(() => { result.current.resolve('a', 'CONFIRMED') })
+  expect(result.current.statusOf('a')).toBe('CONFIRMED')
+  rerender({ spans: [makeSpan('a'), makeSpan('b')], rules: [] })
+  expect(result.current.statusOf('a')).toBe('PENDING')
+  expect(result.current.statusOf('b')).toBe('PENDING')
+})
