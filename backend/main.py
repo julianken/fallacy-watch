@@ -80,7 +80,7 @@ async def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
         meta=AnalysisMeta(
             sentence_count=len(list(_nlp()(text).sents)),
             argument_span_count=len(raw_spans),
-            fallacy_count=len(spans_out),
+            fallacy_count=sum(1 for s in spans_out if s.status == "confirmed"),
             processing_ms=ms,
         ),
     )

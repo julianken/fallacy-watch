@@ -1,4 +1,5 @@
 from unittest.mock import patch
+import pytest
 from httpx import AsyncClient, ASGITransport
 from models.span import ExplainerOutput, ExplainerSpan, ExplainerChallenge, ExplainerQuestion
 
@@ -23,6 +24,7 @@ MOCK_CLASSIFIED = [{"text": "All scientists lie.", "start": 0, "end": 18,
                     "fallacy_type": "Faulty Generalization", "confidence": 0.91,
                     "status": "confirmed"}]
 
+@pytest.mark.asyncio
 async def test_analyze_returns_spans():
     from main import app
     with (patch("main.get_argument_spans", return_value=MOCK_SEGMENTS),
@@ -33,12 +35,14 @@ async def test_analyze_returns_spans():
     assert resp.status_code == 200
     assert resp.json()["spans"][0]["fallacy_type"] == "Faulty Generalization"
 
+@pytest.mark.asyncio
 async def test_analyze_empty_text_returns_422():
     from main import app
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
         resp = await c.post("/analyze", json={"text": ""})
     assert resp.status_code == 422
 
+@pytest.mark.asyncio
 async def test_analyze_no_spans_returns_empty():
     from main import app
     empty = ExplainerOutput(spans=[], dependency_rules=[])
