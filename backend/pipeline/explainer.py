@@ -68,7 +68,7 @@ def generate_content(
         api_key = os.environ.get("OPENAI_API_KEY")
         if api_key is None:
             return _fallback_content(spans)
-        client = OpenAI(api_key=api_key)
+        client = OpenAI(api_key=api_key, timeout=30.0)
 
     payload = json.dumps({"full_text": full_text, "spans": spans}, ensure_ascii=False)
 
