@@ -18,7 +18,7 @@ app.add_middleware(
 )
 
 @app.post("/analyze", response_model=AnalyzeResponse)
-async def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
+def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
     if not req.text.strip():
         raise HTTPException(status_code=422, detail="text must not be empty")
 
