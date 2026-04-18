@@ -35,5 +35,9 @@ test.describe('analyze flow', () => {
     test('fallacy text is highlighted as a clickable button', async () => {
       await expect(app.highlight('All experts agree')).toBeVisible()
     })
+
+    test('fallacy type is displayed in Title Case', async () => {
+      await expect(app.cardConfirmed('span_0')).toContainText('Ad Populum')
+    })
   })
 })
