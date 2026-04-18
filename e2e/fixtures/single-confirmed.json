@@ -6,7 +6,7 @@
       "start": 0,
       "end": 17,
       "status": "confirmed",
-      "fallacy_type": "Ad Populum",
+      "fallacy_type": "ad populum",
       "explanation": "Appeals to consensus without evidence.",
       "challenge": {
         "type": "premise_check",

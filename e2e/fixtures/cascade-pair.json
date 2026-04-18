@@ -6,7 +6,7 @@
       "start": 0,
       "end": 21,
       "status": "confirmed",
-      "fallacy_type": "Ad Populum",
+      "fallacy_type": "ad populum",
       "explanation": "Appeals to scientific consensus without evidence.",
       "challenge": {
         "type": "premise_check",
@@ -26,7 +26,7 @@
       "start": 30,
       "end": 51,
       "status": "possibly",
-      "fallacy_type": "Circular Reasoning",
+      "fallacy_type": "circular reasoning",
       "explanation": "The argument loops back on itself.",
       "challenge": {
         "type": "non_sequitur",

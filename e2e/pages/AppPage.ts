@@ -5,7 +5,6 @@ export class AppPage {
   readonly textarea: Locator
   readonly analyzeButton: Locator
   readonly annotatedText: Locator
-  readonly findingsList: Locator
   readonly metaLine: Locator
   readonly errorMessage: Locator
   readonly noFallaciesMessage: Locator
@@ -15,7 +14,6 @@ export class AppPage {
     this.textarea = page.getByLabel('Text to analyze for argument fallacies')
     this.analyzeButton = page.getByTestId('analyze-button')
     this.annotatedText = page.getByTestId('annotated-text')
-    this.findingsList = page.getByTestId('findings-list')
     this.metaLine = page.getByTestId('meta-line')
     this.errorMessage = page.getByTestId('error-message')
     this.noFallaciesMessage = page.getByTestId('no-fallacies-message')
