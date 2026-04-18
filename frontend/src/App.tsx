@@ -29,16 +29,16 @@ export default function App() {
       <h1 style={{ fontSize: '1.6em', fontWeight: 700, marginBottom: 4 }}>fallacy-watch</h1>
       <p style={{ opacity: 0.5, marginBottom: 24 }}>Analyze any text for argument fallacies.</p>
       <TextInput onAnalyze={handleAnalyze} loading={loading} />
-      {error && <p style={{ color: '#fca5a5', marginBottom: 16 }}>{error}</p>}
+      {error && <p data-testid="error-message" style={{ color: '#fca5a5', marginBottom: 16 }}>{error}</p>}
       {result && !loading && (
         result.spans.length === 0
-          ? <p style={{ opacity: 0.5 }}>No argument fallacies detected.</p>
+          ? <p data-testid="no-fallacies-message" style={{ opacity: 0.5 }}>No argument fallacies detected.</p>
           : <>
-              <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: 16, marginBottom: 24, lineHeight: 1.8 }}>
+              <div data-testid="annotated-text" style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: 16, marginBottom: 24, lineHeight: 1.8 }}>
                 <AnnotatedText text={inputText} spans={result.spans} statusOf={statusOf}
                   onSpanClick={id => document.getElementById(`card-${id}`)?.scrollIntoView({ behavior: 'smooth' })} />
               </div>
-              <p style={{ opacity: 0.4, fontSize: '0.8em', marginBottom: 16 }}>
+              <p data-testid="meta-line" style={{ opacity: 0.4, fontSize: '0.8em', marginBottom: 16 }}>
                 {result.meta.fallacy_count} finding{result.meta.fallacy_count !== 1 ? 's' : ''} · {result.meta.processing_ms}ms
               </p>
               <FindingsList spans={result.spans} rules={result.rules} resolve={resolve} statusOf={statusOf} />

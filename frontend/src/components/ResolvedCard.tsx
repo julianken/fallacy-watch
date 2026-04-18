@@ -4,7 +4,7 @@ interface Props { span: SpanResult; outcome: Resolution }
 export function ResolvedCard({ span, outcome }: Props) {
   const isConfirmed = outcome === 'CONFIRMED'
   return (
-    <div id={`card-${span.id}`} style={{
+    <div id={`card-${span.id}`} data-testid={`card-resolved-${span.id}`} style={{
       background: isConfirmed ? 'rgba(239,68,68,0.08)' : 'rgba(74,222,128,0.06)',
       border: `1px solid ${isConfirmed ? 'rgba(239,68,68,0.3)' : 'rgba(74,222,128,0.25)'}`,
       borderRadius: 8, padding: 14, marginBottom: 12, opacity: 0.75,

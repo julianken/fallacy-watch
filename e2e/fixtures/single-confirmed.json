@@ -1,0 +1,31 @@
+{
+  "spans": [
+    {
+      "id": "span_0",
+      "text": "All experts agree",
+      "start": 0,
+      "end": 17,
+      "status": "confirmed",
+      "fallacy_type": "Ad Populum",
+      "explanation": "Appeals to consensus without evidence.",
+      "challenge": {
+        "type": "premise_check",
+        "question": {
+          "text": "Does this claim rest on expert agreement alone?",
+          "yes_label": "It is a fallacy",
+          "no_label": "It is not a fallacy"
+        }
+      },
+      "if_legitimate": null,
+      "if_fallacy": null,
+      "content_generated": true
+    }
+  ],
+  "rules": [],
+  "meta": {
+    "sentence_count": 1,
+    "argument_span_count": 1,
+    "fallacy_count": 1,
+    "processing_ms": 42
+  }
+}
