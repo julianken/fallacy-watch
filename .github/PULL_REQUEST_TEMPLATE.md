@@ -61,12 +61,6 @@ Human-authored PRs can drag-and-drop images directly into GitHub. -->
 - [ ] New tests added for any new behavior
 - [ ] (UI only) Manual smoke via dev servers — feature works in the browser
 
-## Plan reference
-
-<!-- Link the execution plan and task this PR implements. -->
-
-Task <N> from `docs/plans/2026-04-17-fallacy-watch-plan.md`.
-
 ---
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
