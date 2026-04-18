@@ -13,7 +13,7 @@ interface Props {
 export function FindingsList({ spans, rules, resolve, statusOf }: Props) {
   const [reviewed, setReviewed] = useState<Set<string>>(new Set())
   return (
-    <div>
+    <div data-testid="findings-list">
       {[...spans].sort((a, b) => a.start - b.start).map(span => {
         const status = statusOf(span.id)
         if (status === 'MOOT' && !reviewed.has(span.id)) {
