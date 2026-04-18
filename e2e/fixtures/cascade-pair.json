@@ -1,0 +1,59 @@
+{
+  "spans": [
+    {
+      "id": "span_0",
+      "text": "Every scientist knows",
+      "start": 0,
+      "end": 21,
+      "status": "confirmed",
+      "fallacy_type": "ad populum",
+      "explanation": "Appeals to scientific consensus without evidence.",
+      "challenge": {
+        "type": "premise_check",
+        "question": {
+          "text": "Is the claim based on consensus alone?",
+          "yes_label": "Fallacy confirmed",
+          "no_label": "Not a fallacy"
+        }
+      },
+      "if_legitimate": null,
+      "if_fallacy": null,
+      "content_generated": true
+    },
+    {
+      "id": "span_1",
+      "text": "this proves our point",
+      "start": 30,
+      "end": 51,
+      "status": "possibly",
+      "fallacy_type": "circular reasoning",
+      "explanation": "The argument loops back on itself.",
+      "challenge": {
+        "type": "non_sequitur",
+        "question": {
+          "text": "Does this conclusion stand independently?",
+          "yes_label": "It is circular",
+          "no_label": "It stands on its own"
+        }
+      },
+      "if_legitimate": "The conclusion stands independently.",
+      "if_fallacy": "The argument is circular.",
+      "content_generated": true
+    }
+  ],
+  "rules": [
+    {
+      "source_id": "span_0",
+      "dependent_id": "span_1",
+      "when": "CONFIRMED",
+      "effect": "moot",
+      "reason": "Premise failure makes this conclusion moot."
+    }
+  ],
+  "meta": {
+    "sentence_count": 1,
+    "argument_span_count": 2,
+    "fallacy_count": 1,
+    "processing_ms": 55
+  }
+}
