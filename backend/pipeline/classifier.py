@@ -10,6 +10,17 @@ from sentence_transformers import SentenceTransformer
 
 DATA_DIR = pathlib.Path(__file__).parent.parent / "data"
 CONFIDENCE_THRESHOLD = 0.82
+EMBEDDER_MODEL = "all-mpnet-base-v2"
+
+# Pin the HuggingFace embedder to a specific commit SHA. The FAISS index stores
+# vectors produced by this exact checkpoint — if upstream republishes weights
+# under the same name, dimension would still match but query embeddings would
+# drift apart from the indexed ones, silently degrading classification.
+#
+# To upgrade: bump MPNET_REVISION, rebuild the FAISS index
+# (`python data/build_index.py` writes a new sidecar with the new revision),
+# commit the regenerated index + labels + sidecar, and re-run the tests.
+MPNET_REVISION = "e8c3b32edf5434bc2275fc9bab85f82640a19130"
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +29,7 @@ logger = logging.getLogger(__name__)
 def _load_resources():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     logger.info("sentence-transformers device: %s", device)
-    model = SentenceTransformer("all-mpnet-base-v2", device=device)
+    model = SentenceTransformer(EMBEDDER_MODEL, device=device, revision=MPNET_REVISION)
     index = faiss.read_index(str(DATA_DIR / "logical_fallacy.index"))
     labels = json.loads((DATA_DIR / "logical_fallacy_labels.json").read_text())
     return model, index, labels

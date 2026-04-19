@@ -8,6 +8,17 @@ from transformers import pipeline as hf_pipeline
 
 logger = logging.getLogger(__name__)
 
+# Pin the HuggingFace model to a specific commit SHA. Without this we'd track
+# upstream HEAD on each cache miss, and a republish that swaps the id2label map
+# (e.g. to LABEL_0 / LABEL_1) would silently make every sentence "not an
+# argument" with no error. See `id2label` check below.
+#
+# To upgrade: bump ROBERTA_ARGUMENT_REVISION to a newer commit SHA from
+# https://huggingface.co/chkla/roberta-argument/commits/main, re-run the test
+# suite, smoke-test segmentation on a handful of inputs, and verify the model's
+# config.json at the new SHA still has id2label = {0: "NON-ARGUMENT", 1: "ARGUMENT"}.
+ROBERTA_ARGUMENT_REVISION = "7c0e6b88c91828ba07dfc473d2d11628e3b734fc"
+
 
 class SegmentationResult(NamedTuple):
     spans: list[dict]
@@ -25,6 +36,7 @@ def _arg_classifier():
     return hf_pipeline(
         "text-classification",
         model="chkla/roberta-argument",
+        revision=ROBERTA_ARGUMENT_REVISION,
         device=device,
     )
 
