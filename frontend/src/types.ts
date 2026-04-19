@@ -20,6 +20,8 @@ export interface SpanResult {
 export interface AnalysisMeta {
   sentence_count: number; argument_span_count: number
   fallacy_count: number; processing_ms: number
+  truncated?: boolean
+  original_char_count?: number | null
 }
 
 export interface AnalyzeResponse { spans: SpanResult[]; rules: DependencyRule[]; meta: AnalysisMeta }

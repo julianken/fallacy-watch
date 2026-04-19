@@ -46,10 +46,15 @@ npx vitest run
 ## Environment variables
 
 ```
-OPENAI_API_KEY=<your key>    # required for GPT-4o mini explainer step
+OPENAI_API_KEY=<your key>             # required for GPT-4o mini explainer step
+ANALYZE_MAX_CONCURRENT=2              # optional: bounded semaphore on /analyze ML inference
+ANALYZE_RATE_LIMIT=10/minute          # optional: per-IP slowapi rate limit on /analyze
+ANALYZE_SKIP_WARMUP=1                 # optional: skip lifespan model warmup (used by tests)
 ```
 
 Copy `.env.example` to `.env` in `backend/` and fill in your key. The app degrades gracefully (template fallback content) if the key is missing or the API call fails.
+
+`/analyze` rate limiting is in-memory (per-process) via slowapi — fine for a single uvicorn worker. Multi-worker deployments should configure a shared backend (Redis) or move rate limiting to the reverse proxy.
 
 ## Key architecture decisions
 
