@@ -16,7 +16,9 @@ from pipeline.challenge_types import challenge_type_for
     ("false dilemma",          "non_sequitur"),
     ("ad hominem",             "non_sequitur"),
     ("intentional",            "non_sequitur"),
-    # 1 synthetic default case
+    # 1 defensive entry (not a runtime label, kept for forward-compat)
+    ("miscellaneous",          "non_sequitur"),
+    # 1 synthetic default case — 13 runtime + 1 defensive + 1 unknown default = 15 total
     ("unknown label",          "non_sequitur"),
 ])
 def test_challenge_type_for(label: str, expected: str) -> None:
