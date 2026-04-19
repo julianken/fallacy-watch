@@ -1,9 +1,11 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import Literal
 
-class Resolution(str, Enum):
+
+class Resolution(StrEnum):
     PENDING   = "PENDING"
     CONFIRMED = "CONFIRMED"
     CLEARED   = "CLEARED"
@@ -39,7 +41,9 @@ class FallacyCollection:
                     cascades.append((rule.dependent_id, Resolution.MOOT, rule.reason))
         return cascades
 
-    def preview_cascade(self, span_id: str, outcome: Resolution) -> list[tuple[str, Resolution, str]]:
+    def preview_cascade(
+        self, span_id: str, outcome: Resolution,
+    ) -> list[tuple[str, Resolution, str]]:
         return [
             (r.dependent_id, Resolution.MOOT, r.reason)
             for r in self.rules

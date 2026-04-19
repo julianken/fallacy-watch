@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock
-from pipeline.explainer import generate_content, _fallback_content
+
+from pipeline.explainer import _fallback_content, generate_content
 
 SPANS = [{
     "id": "a", "text": "Everyone knows politicians lie",
@@ -8,8 +9,7 @@ SPANS = [{
 }]
 
 def _mock_parsed():
-    from models.span import (ExplainerOutput, ExplainerSpan, ExplainerChallenge,
-                              ExplainerQuestion)
+    from models.span import ExplainerChallenge, ExplainerOutput, ExplainerQuestion, ExplainerSpan
     return ExplainerOutput(
         spans=[ExplainerSpan(
             id="a", explanation="Invokes consensus without evidence.",

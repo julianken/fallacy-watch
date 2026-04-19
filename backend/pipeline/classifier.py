@@ -1,9 +1,10 @@
 import json
 import pathlib
-import numpy as np
 from functools import lru_cache
-from sentence_transformers import SentenceTransformer
+
 import faiss
+import numpy as np
+from sentence_transformers import SentenceTransformer
 
 DATA_DIR = pathlib.Path(__file__).parent.parent / "data"
 CONFIDENCE_THRESHOLD = 0.82
@@ -27,7 +28,7 @@ def classify_spans(spans: list[dict]) -> list[dict]:
     embeddings = np.array(embeddings, dtype="float32")
     distances, indices = index.search(embeddings, k=1)
     result = []
-    for span, dist, idx in zip(spans, distances, indices):
+    for span, dist, idx in zip(spans, distances, indices, strict=True):
         confidence = float(dist[0])
         result.append({
             **span,

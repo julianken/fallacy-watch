@@ -1,7 +1,12 @@
 from models.span import (
-    ChallengeType, Question, Challenge,
-    SpanResult, AnalysisMeta, AnalyzeResponse,
+    AnalysisMeta,
+    AnalyzeResponse,
+    Challenge,
+    ChallengeType,
+    Question,
+    SpanResult,
 )
+
 
 def test_span_result_serializes():
     span = SpanResult(

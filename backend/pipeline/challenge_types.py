@@ -9,7 +9,8 @@ _MAP: dict[str, str] = {
     "false dilemma":          "non_sequitur",
     "ad hominem":             "non_sequitur",
     "intentional":            "non_sequitur",
-    "miscellaneous":          "non_sequitur",  # defensive: not in current labels but safe forward-compat guard
+    # defensive: not in current labels but safe forward-compat guard
+    "miscellaneous":          "non_sequitur",
     "ad populum":             "premise_check",
     "appeal to emotion":      "premise_check",
     "circular reasoning":     "premise_check",

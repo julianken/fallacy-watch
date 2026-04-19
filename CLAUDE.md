@@ -75,3 +75,7 @@ Outputs `backend/data/logical_fallacy.index` and `backend/data/logical_fallacy_l
 - TypeScript: strict mode, no `any`, Vitest for tests
 - No comments explaining what the code does — only comments explaining non-obvious WHY
 - TDD: write failing test first, implement to pass, then commit
+
+### Type-checking (pyright)
+
+`pyright` runs in CI with `typeCheckingMode = "standard"` (config in `backend/pyproject.toml`). Standard, not `strict`, because spaCy/transformers/faiss ship limited stubs and `strict` would force noise-suppression at every third-party boundary. Tighten to `strict` once stubs improve or once we wrap external libs in typed adapters. `# pyright: ignore[<rule>]` comments must include a one-line justification (no bare ignores).

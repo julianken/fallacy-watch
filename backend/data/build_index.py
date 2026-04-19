@@ -1,9 +1,10 @@
 import json
 import pathlib
-import numpy as np
-from sentence_transformers import SentenceTransformer
-from datasets import load_dataset
+
 import faiss
+import numpy as np
+from datasets import load_dataset
+from sentence_transformers import SentenceTransformer
 
 DATA_DIR = pathlib.Path(__file__).parent
 
@@ -43,7 +44,8 @@ def build():
 
     print("Building FAISS index...")
     index = faiss.IndexFlatIP(embeddings.shape[1])
-    index.add(embeddings)
+    # faiss has no type stubs; .add(x) signature is inferred incorrectly
+    index.add(embeddings)  # pyright: ignore[reportCallIssue]
 
     faiss.write_index(index, str(DATA_DIR / "logical_fallacy.index"))
     (DATA_DIR / "logical_fallacy_labels.json").write_text(json.dumps(labels))

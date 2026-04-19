@@ -23,4 +23,5 @@ jobs:
           source .venv/bin/activate
           python -m spacy download en_core_web_sm
           ruff check .
+          pyright
           pytest tests/ -v -m "not slow"

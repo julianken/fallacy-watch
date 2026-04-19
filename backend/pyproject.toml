@@ -1,0 +1,38 @@
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",     # pycodestyle errors
+    "F",     # pyflakes
+    "I",     # isort
+    "B",     # flake8-bugbear
+    "UP",    # pyupgrade
+    "S",     # flake8-bandit (security)
+    "ASYNC", # flake8-async
+    "PL",    # pylint (subset)
+]
+ignore = [
+    "S101",    # assert used — fine in tests
+    "PLR0913", # too many args — opinions vary
+]
+
+[tool.ruff.lint.per-file-ignores]
+# tests: assert + fake passwords are fine; magic comparisons (status codes,
+# fixture sizes) and lazy imports for monkeypatching are conventional in
+# pytest code.
+"tests/*" = ["S101", "S105", "S106", "PLR2004", "PLC0415", "E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pyright]
+include = ["main.py", "models", "pipeline", "data"]
+exclude = ["**/__pycache__", "tests"]
+pythonVersion = "3.11"
+typeCheckingMode = "standard"
+reportMissingImports = "error"
+reportMissingTypeStubs = "warning"
+reportPrivateUsage = "warning"
