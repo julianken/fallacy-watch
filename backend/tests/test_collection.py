@@ -1,8 +1,38 @@
+import pytest
+from pydantic import BaseModel, ValidationError
+
 from models.collection import DependencyRule, FallacyCollection, Resolution, Span
 
 
 def _span(id, status="possibly"):
     return Span(id=id, status=status, resolution=Resolution.PENDING)
+
+
+def test_span_and_dependency_rule_are_pydantic():
+    assert issubclass(Span, BaseModel)
+    assert issubclass(DependencyRule, BaseModel)
+
+
+def test_dependency_rule_rejects_lowercase_when():
+    with pytest.raises(ValidationError):
+        DependencyRule(
+            source_id="a",
+            dependent_id="b",
+            when="confirmed",
+            effect="moot",
+            reason="x",
+        )
+
+
+def test_dependency_rule_rejects_pending_when():
+    with pytest.raises(ValidationError):
+        DependencyRule(
+            source_id="a",
+            dependent_id="b",
+            when="PENDING",
+            effect="moot",
+            reason="x",
+        )
 
 def test_resolve_confirmed_cascades_moot():
     col = FallacyCollection(

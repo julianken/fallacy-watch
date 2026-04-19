@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from enum import StrEnum
 from typing import Literal
+
+from pydantic import BaseModel
 
 
 class Resolution(StrEnum):
@@ -11,17 +12,15 @@ class Resolution(StrEnum):
     CLEARED   = "CLEARED"
     MOOT      = "MOOT"
 
-@dataclass
-class Span:
+class Span(BaseModel):
     id: str
     status: str
     resolution: Resolution = Resolution.PENDING
 
-@dataclass
-class DependencyRule:
+class DependencyRule(BaseModel):
     source_id: str
     dependent_id: str
-    when: str
+    when: Literal["CONFIRMED", "CLEARED"]
     effect: Literal["moot"]
     reason: str
 
