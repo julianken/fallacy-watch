@@ -26,7 +26,7 @@ class Challenge(BaseModel):
 class DependencyRule(BaseModel):
     source_id: str
     dependent_id: str
-    when: str       # "CONFIRMED" | "CLEARED"
+    when: Literal["CONFIRMED", "CLEARED"]
     effect: Literal["moot"]
     reason: str
 

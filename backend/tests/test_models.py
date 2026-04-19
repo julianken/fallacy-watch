@@ -1,8 +1,12 @@
+import pytest
+from pydantic import ValidationError
+
 from models.span import (
     AnalysisMeta,
     AnalyzeResponse,
     Challenge,
     ChallengeType,
+    DependencyRule,
     Question,
     SpanResult,
 )
@@ -31,3 +35,23 @@ def test_analyze_response_empty_spans():
         sentence_count=3, argument_span_count=0, fallacy_count=0, processing_ms=42
     ))
     assert resp.spans == []
+
+def test_dependency_rule_rejects_pending_when():
+    with pytest.raises(ValidationError):
+        DependencyRule(
+            source_id="a",
+            dependent_id="b",
+            when="PENDING",
+            effect="moot",
+            reason="x",
+        )
+
+def test_dependency_rule_rejects_lowercase_when():
+    with pytest.raises(ValidationError):
+        DependencyRule(
+            source_id="a",
+            dependent_id="b",
+            when="confirmed",
+            effect="moot",
+            reason="x",
+        )
