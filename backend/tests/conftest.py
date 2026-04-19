@@ -1,4 +1,6 @@
+import json
 import os
+import pathlib
 
 import pytest
 
@@ -11,6 +13,13 @@ os.environ.setdefault("ANALYZE_SKIP_WARMUP", "1")
 # Use a small per-IP rate limit so the rate-limit test can trigger 429 quickly.
 # Other tests issue at most 1-2 requests each, well under the cap.
 os.environ.setdefault("ANALYZE_RATE_LIMIT", "3/minute")
+
+# Canonical lowercase fallacy labels emitted by the real classifier. Source of
+# truth for any test that needs a fallacy_type string — drift between fixtures
+# and the labels file becomes a test-time error, not a silent prod bug.
+FALLACY_LABELS: list[str] = sorted(set(json.loads(
+    (pathlib.Path(__file__).parent.parent / "data" / "logical_fallacy_labels.json").read_text()
+)))
 
 
 @pytest.fixture(autouse=True)

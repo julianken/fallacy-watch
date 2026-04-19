@@ -17,7 +17,7 @@ from models.span import (
 def test_span_result_serializes():
     span = SpanResult(
         id="a", text="Everyone knows politicians lie", start=0, end=30,
-        status="possibly", fallacy_type="Ad Populum",
+        status="possibly", fallacy_type="ad populum",
         explanation="Invokes consensus without evidence.",
         challenge=Challenge(
             type=ChallengeType.PREMISE_CHECK,
@@ -62,14 +62,14 @@ def test_raw_and_classified_span_construct_and_serialize():
     raw = RawSpan(text="All scientists lie.", start=0, end=18)
     classified = ClassifiedSpan(
         **raw.model_dump(),
-        fallacy_type="Faulty Generalization",
+        fallacy_type="faulty generalization",
         confidence=0.91,
         status="confirmed",
     )
     assert classified.id is None
     data = classified.model_dump()
     assert data["text"] == "All scientists lie."
-    assert data["fallacy_type"] == "Faulty Generalization"
+    assert data["fallacy_type"] == "faulty generalization"
     assert data["status"] == "confirmed"
 
     # `status` is a Literal — anything else must be rejected at construction.

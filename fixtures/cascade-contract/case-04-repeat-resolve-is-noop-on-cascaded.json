@@ -1,0 +1,18 @@
+{
+  "name": "resolving the dependent again after cascade keeps the cascaded outcome",
+  "spans": [
+    {"id": "a", "status": "possibly"},
+    {"id": "b", "status": "possibly"}
+  ],
+  "rules": [
+    {"source_id": "a", "dependent_id": "b", "when": "CONFIRMED", "effect": "moot", "reason": "depends on a"}
+  ],
+  "actions": [
+    {"resolve": "a", "outcome": "CONFIRMED"},
+    {"resolve": "b", "outcome": "MOOT"}
+  ],
+  "expected_final_state": {
+    "a": "CONFIRMED",
+    "b": "MOOT"
+  }
+}

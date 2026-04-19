@@ -43,6 +43,23 @@ cd frontend
 npx vitest run
 ```
 
+### Pre-release checks
+
+CI runs `pytest -v -m "not slow"` — the `slow` marker is reserved for tests
+that hit external services (real OpenAI API). Before cutting a release, run
+the slow tier locally to catch contract drift between our `ExplainerOutput`
+schema and OpenAI structured outputs:
+
+```bash
+cd backend
+source .venv/bin/activate
+OPENAI_API_KEY=sk-... pytest -v -m slow tests/test_explainer.py
+```
+
+Tests gated by `@pytest.mark.skipif(not os.environ.get("OPENAI_API_KEY"), ...)`
+auto-skip when the key is absent, so the same command is safe in any
+environment.
+
 ## Environment variables
 
 ```
@@ -64,7 +81,7 @@ Copy `.env.example` to `.env` in `backend/` and fill in your key. The app degrad
 - **GPT-4o mini for content only**: A single batched call generates explanations, challenges, and dependency rules. It never reclassifies.
 - **Confidence threshold 0.82**: Spans above this are `confirmed`; below are `possibly`. Adjust in `backend/pipeline/classifier.py`.
 - **No server roundtrips after /analyze**: All resolution state lives in the React `useFallacyCollection` hook.
-- **FallacyCollection cascade logic**: Defined in `backend/models/collection.py` (Python) and mirrored in `frontend/src/hooks/useFallacyCollection.ts` (TypeScript). Keep them in sync.
+- **FallacyCollection cascade logic**: Defined in `backend/models/collection.py` (Python) and mirrored in `frontend/src/hooks/useFallacyCollection.ts` (TypeScript). Contract enforced by `fixtures/cascade-contract/` golden files driving both `backend/tests/test_cascade_contract.py` and `frontend/src/hooks/useFallacyCollection.contract.test.ts` — adding a new fixture file is automatically picked up by both runners.
 
 ## Build the logical-fallacy index (one-time)
 
