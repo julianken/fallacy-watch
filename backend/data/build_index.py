@@ -44,7 +44,8 @@ def build():
 
     print("Building FAISS index...")
     index = faiss.IndexFlatIP(embeddings.shape[1])
-    index.add(embeddings)
+    # faiss has no type stubs; .add(x) signature is inferred incorrectly
+    index.add(embeddings)  # pyright: ignore[reportCallIssue]
 
     faiss.write_index(index, str(DATA_DIR / "logical_fallacy.index"))
     (DATA_DIR / "logical_fallacy_labels.json").write_text(json.dumps(labels))

@@ -25,9 +25,11 @@ def get_argument_spans(text: str) -> list[dict]:
         return []
     texts = [s.text for s in sentences]
     labels = _arg_classifier()(texts, batch_size=16, truncation=True)
-    # chkla/roberta-argument outputs "ARGUMENT" / "NON-ARGUMENT"
+    # chkla/roberta-argument outputs "ARGUMENT" / "NON-ARGUMENT".
+    # transformers stubs type the pipeline return as a broad union (incl. None);
+    # at runtime it's a list[dict[str, str]] when called with a list of strings.
     return [
         {"text": sent.text, "start": sent.start_char, "end": sent.end_char}
-        for sent, label in zip(sentences, labels, strict=True)
+        for sent, label in zip(sentences, labels, strict=True)  # pyright: ignore[reportArgumentType]
         if label["label"] == "ARGUMENT"
     ]

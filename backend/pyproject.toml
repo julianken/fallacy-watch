@@ -27,3 +27,12 @@ ignore = [
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[tool.pyright]
+include = ["main.py", "models", "pipeline", "data"]
+exclude = ["**/__pycache__", "tests"]
+pythonVersion = "3.11"
+typeCheckingMode = "standard"
+reportMissingImports = "error"
+reportMissingTypeStubs = "warning"
+reportPrivateUsage = "warning"
