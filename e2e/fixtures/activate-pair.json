@@ -1,0 +1,42 @@
+{
+  "spans": [
+    {
+      "id": "span_0",
+      "text": "First claim",
+      "start": 0, "end": 11,
+      "status": "confirmed",
+      "fallacy_type": "Ad Populum",
+      "explanation": "Appeals to consensus.",
+      "challenge": {
+        "type": "premise_check",
+        "question": { "text": "Is this a fallacy?", "yes_label": "Yes fallacy", "no_label": "Not a fallacy" }
+      },
+      "if_legitimate": null, "if_fallacy": null, "content_generated": true
+    },
+    {
+      "id": "span_1",
+      "text": "Second claim",
+      "start": 13, "end": 25,
+      "status": "possibly",
+      "fallacy_type": "Circular Reasoning",
+      "explanation": "Circular.",
+      "challenge": {
+        "type": "premise_check",
+        "question": { "text": "Is this circular?", "yes_label": "Yes circular", "no_label": "Not circular" }
+      },
+      "if_legitimate": "The conclusion stands independently.",
+      "if_fallacy": "The argument is circular.",
+      "content_generated": true
+    }
+  ],
+  "rules": [
+    {
+      "source_id": "span_0",
+      "dependent_id": "span_1",
+      "when": "CONFIRMED",
+      "effect": "activate",
+      "reason": "First confirms second needs review."
+    }
+  ],
+  "meta": { "sentence_count": 1, "argument_span_count": 2, "fallacy_count": 2, "processing_ms": 55 }
+}
