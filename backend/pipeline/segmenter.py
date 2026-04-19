@@ -1,6 +1,8 @@
+from functools import lru_cache
+
 import spacy
 from transformers import pipeline as hf_pipeline
-from functools import lru_cache
+
 
 @lru_cache(maxsize=1)
 def _nlp():
@@ -23,8 +25,9 @@ def get_argument_spans(text: str) -> list[dict]:
         return []
     texts = [s.text for s in sentences]
     labels = _arg_classifier()(texts, batch_size=16, truncation=True)
+    # chkla/roberta-argument outputs "ARGUMENT" / "NON-ARGUMENT"
     return [
         {"text": sent.text, "start": sent.start_char, "end": sent.end_char}
-        for sent, label in zip(sentences, labels)
-        if label["label"] == "ARGUMENT"   # chkla/roberta-argument outputs "ARGUMENT" / "NON-ARGUMENT"
+        for sent, label in zip(sentences, labels, strict=True)
+        if label["label"] == "ARGUMENT"
     ]

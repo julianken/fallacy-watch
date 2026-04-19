@@ -1,7 +1,10 @@
 from unittest.mock import patch
+
 import pytest
-from httpx import AsyncClient, ASGITransport
-from models.span import ExplainerOutput, ExplainerSpan, ExplainerChallenge, ExplainerQuestion
+from httpx import ASGITransport, AsyncClient
+
+from models.span import ExplainerChallenge, ExplainerOutput, ExplainerQuestion, ExplainerSpan
+
 
 def _mock_explainer_output():
     return ExplainerOutput(

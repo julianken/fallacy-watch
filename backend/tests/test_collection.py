@@ -1,4 +1,5 @@
-from models.collection import FallacyCollection, Resolution, Span, DependencyRule
+from models.collection import DependencyRule, FallacyCollection, Resolution, Span
+
 
 def _span(id, status="possibly"):
     return Span(id=id, status=status, resolution=Resolution.PENDING)

@@ -1,9 +1,12 @@
 from __future__ import annotations
-from enum import Enum
-from typing import Optional, Literal
+
+from enum import StrEnum
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
-class ChallengeType(str, Enum):
+
+class ChallengeType(StrEnum):
     COUNTEREXAMPLE       = "counterexample"
     DOMAIN_CHECK         = "domain_check"
     MEANING_CHECK        = "meaning_check"
@@ -36,8 +39,8 @@ class SpanResult(BaseModel):
     fallacy_type: str
     explanation: str
     challenge: Challenge
-    if_legitimate: Optional[str] = None
-    if_fallacy: Optional[str] = None
+    if_legitimate: str | None = None
+    if_fallacy: str | None = None
     content_generated: bool = True
 
 class AnalysisMeta(BaseModel):
@@ -78,8 +81,8 @@ class ExplainerSpan(BaseModel):
     id: str
     explanation: str
     challenge: ExplainerChallenge
-    if_legitimate: Optional[str] = None
-    if_fallacy: Optional[str] = None
+    if_legitimate: str | None = None
+    if_fallacy: str | None = None
 
 class ExplainerOutput(BaseModel):
     spans: list[ExplainerSpan]

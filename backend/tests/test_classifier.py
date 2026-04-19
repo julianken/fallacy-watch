@@ -1,4 +1,5 @@
 import pytest
+
 from pipeline.classifier import classify_spans
 
 
@@ -21,8 +22,9 @@ def test_preserves_original_keys():
 
 
 def test_threshold_determines_status(monkeypatch):
-    import numpy as np
     import types
+
+    import numpy as np
 
     fake_model = types.SimpleNamespace(
         encode=lambda texts, **kw: np.array([[1.0] * 768], dtype="float32")

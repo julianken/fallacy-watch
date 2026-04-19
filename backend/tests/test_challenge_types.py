@@ -1,5 +1,7 @@
 import pytest
+
 from pipeline.challenge_types import challenge_type_for
+
 
 @pytest.mark.parametrize("label,expected", [
     # 13 runtime labels (all lowercase, as produced by classifier.py)

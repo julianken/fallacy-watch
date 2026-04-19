@@ -1,9 +1,10 @@
 import json
 import pathlib
-import numpy as np
-from sentence_transformers import SentenceTransformer
-from datasets import load_dataset
+
 import faiss
+import numpy as np
+from datasets import load_dataset
+from sentence_transformers import SentenceTransformer
 
 DATA_DIR = pathlib.Path(__file__).parent
 

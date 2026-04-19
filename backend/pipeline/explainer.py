@@ -1,9 +1,10 @@
 import json
 import logging
 import os
+
 from openai import OpenAI
-from models.span import (ExplainerOutput, ExplainerSpan, ExplainerChallenge,
-                          ExplainerQuestion)
+
+from models.span import ExplainerChallenge, ExplainerOutput, ExplainerQuestion, ExplainerSpan
 from pipeline.challenge_types import challenge_type_for
 
 logger = logging.getLogger(__name__)
@@ -19,7 +20,7 @@ and an assigned fallacy_type. Generate:
 - if_fallacy: one sentence — what this looks like if it is a fallacy
 
 Also return dependency_rules if any span's challenge only makes sense after another's resolution.
-Never reclassify the assigned fallacy_type."""
+Never reclassify the assigned fallacy_type."""  # noqa: E501
 
 _TEMPLATE_QUESTIONS = {
     "counterexample":       ("Can you name a single instance that disproves this universal claim?",

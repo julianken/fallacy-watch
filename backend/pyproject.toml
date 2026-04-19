@@ -19,7 +19,10 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101", "S105", "S106"]  # assert + fake passwords are fine in tests
+# tests: assert + fake passwords are fine; magic comparisons (status codes,
+# fixture sizes) and lazy imports for monkeypatching are conventional in
+# pytest code.
+"tests/*" = ["S101", "S105", "S106", "PLR2004", "PLC0415", "E501"]
 
 [tool.ruff.format]
 quote-style = "double"

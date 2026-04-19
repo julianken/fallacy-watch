@@ -1,13 +1,21 @@
 import time
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+
 from models.span import (
-    AnalyzeRequest, AnalyzeResponse, SpanResult,
-    Challenge, Question, ChallengeType, DependencyRule, AnalysisMeta,
+    AnalysisMeta,
+    AnalyzeRequest,
+    AnalyzeResponse,
+    Challenge,
+    ChallengeType,
+    DependencyRule,
+    Question,
+    SpanResult,
 )
-from pipeline.segmenter import get_argument_spans, _nlp
 from pipeline.classifier import classify_spans
-from pipeline.explainer import generate_content, _fallback_content
+from pipeline.explainer import _fallback_content, generate_content
+from pipeline.segmenter import _nlp, get_argument_spans
 
 app = FastAPI()
 app.add_middleware(
