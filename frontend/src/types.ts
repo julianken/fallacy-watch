@@ -7,7 +7,7 @@ export interface Challenge { type: ChallengeType; question: Question }
 
 export interface DependencyRule {
   source_id: string; dependent_id: string
-  when: 'CONFIRMED' | 'CLEARED'; effect: 'moot' | 'activate'; reason: string
+  when: 'CONFIRMED' | 'CLEARED'; effect: 'moot'; reason: string
 }
 
 export interface SpanResult {
@@ -24,4 +24,4 @@ export interface AnalysisMeta {
 
 export interface AnalyzeResponse { spans: SpanResult[]; rules: DependencyRule[]; meta: AnalysisMeta }
 
-export type Resolution = 'PENDING' | 'CONFIRMED' | 'CLEARED' | 'MOOT' | 'DORMANT'
+export type Resolution = 'PENDING' | 'CONFIRMED' | 'CLEARED' | 'MOOT'

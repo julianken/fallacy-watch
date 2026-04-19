@@ -13,16 +13,6 @@ def test_resolve_confirmed_cascades_moot():
     assert col.spans["b"].resolution == Resolution.MOOT
     assert cascades[0] == ("b", Resolution.MOOT, "premise failed")
 
-def test_resolve_cleared_activates_dormant():
-    b = Span(id="b", status="possibly", resolution=Resolution.DORMANT)
-    col = FallacyCollection(
-        spans=[_span("a"), b],
-        rules=[DependencyRule(source_id="a", dependent_id="b",
-                              when="CLEARED", effect="activate", reason="premise granted")]
-    )
-    col.resolve("a", Resolution.CLEARED)
-    assert col.spans["b"].resolution == Resolution.PENDING
-
 def test_is_complete_false_when_pending():
     assert FallacyCollection(spans=[_span("a")], rules=[]).is_complete() is False
 

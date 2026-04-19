@@ -7,7 +7,6 @@ class Resolution(str, Enum):
     CONFIRMED = "CONFIRMED"
     CLEARED   = "CLEARED"
     MOOT      = "MOOT"
-    DORMANT   = "DORMANT"
 
 @dataclass
 class Span:
@@ -33,24 +32,23 @@ class FallacyCollection:
         cascades = []
         for rule in self.rules:
             if rule.source_id == span_id and rule.when == outcome.value:
+                if rule.effect != "moot":
+                    continue
                 dep = self.spans[rule.dependent_id]
-                new_res = Resolution.MOOT if rule.effect == "moot" else Resolution.PENDING
-                dep.resolution = new_res
-                cascades.append((rule.dependent_id, new_res, rule.reason))
+                dep.resolution = Resolution.MOOT
+                cascades.append((rule.dependent_id, Resolution.MOOT, rule.reason))
         return cascades
 
     def preview_cascade(self, span_id: str, outcome: Resolution) -> list[tuple[str, Resolution, str]]:
         return [
-            (r.dependent_id,
-             Resolution.MOOT if r.effect == "moot" else Resolution.PENDING,
-             r.reason)
+            (r.dependent_id, Resolution.MOOT, r.reason)
             for r in self.rules
-            if r.source_id == span_id and r.when == outcome.value
+            if r.source_id == span_id and r.when == outcome.value and r.effect == "moot"
         ]
 
     def active(self) -> list[Span]:
         return [s for s in self.spans.values()
-                if s.resolution not in (Resolution.MOOT, Resolution.DORMANT)]
+                if s.resolution != Resolution.MOOT]
 
     def pending(self) -> list[Span]:
         return [s for s in self.spans.values() if s.resolution == Resolution.PENDING]

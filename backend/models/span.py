@@ -24,7 +24,7 @@ class DependencyRule(BaseModel):
     source_id: str
     dependent_id: str
     when: str       # "CONFIRMED" | "CLEARED"
-    effect: str     # "moot" | "activate"
+    effect: str     # "moot"
     reason: str
 
 class SpanResult(BaseModel):
@@ -71,7 +71,7 @@ class ExplainerDependencyRule(BaseModel):
     source_id: str
     dependent_id: str
     when: Literal["CONFIRMED", "CLEARED"]
-    effect: Literal["moot", "activate"]
+    effect: Literal["moot"]
     reason: str
 
 class ExplainerSpan(BaseModel):
