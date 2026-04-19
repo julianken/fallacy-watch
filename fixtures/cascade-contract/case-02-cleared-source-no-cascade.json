@@ -1,0 +1,17 @@
+{
+  "name": "cleared source does not cascade when rule fires on CONFIRMED",
+  "spans": [
+    {"id": "a", "status": "possibly"},
+    {"id": "b", "status": "possibly"}
+  ],
+  "rules": [
+    {"source_id": "a", "dependent_id": "b", "when": "CONFIRMED", "effect": "moot", "reason": "only on confirm"}
+  ],
+  "actions": [
+    {"resolve": "a", "outcome": "CLEARED"}
+  ],
+  "expected_final_state": {
+    "a": "CLEARED",
+    "b": "PENDING"
+  }
+}

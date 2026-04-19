@@ -1,0 +1,17 @@
+{
+  "name": "confirmed source mootes dependent",
+  "spans": [
+    {"id": "a", "status": "confirmed"},
+    {"id": "b", "status": "possibly"}
+  ],
+  "rules": [
+    {"source_id": "a", "dependent_id": "b", "when": "CONFIRMED", "effect": "moot", "reason": "depends on a"}
+  ],
+  "actions": [
+    {"resolve": "a", "outcome": "CONFIRMED"}
+  ],
+  "expected_final_state": {
+    "a": "CONFIRMED",
+    "b": "MOOT"
+  }
+}

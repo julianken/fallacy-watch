@@ -1,0 +1,19 @@
+{
+  "name": "resolution with no matching rule leaves dependents pending",
+  "spans": [
+    {"id": "a", "status": "possibly"},
+    {"id": "b", "status": "possibly"},
+    {"id": "c", "status": "possibly"}
+  ],
+  "rules": [
+    {"source_id": "b", "dependent_id": "c", "when": "CONFIRMED", "effect": "moot", "reason": "unrelated to a"}
+  ],
+  "actions": [
+    {"resolve": "a", "outcome": "CONFIRMED"}
+  ],
+  "expected_final_state": {
+    "a": "CONFIRMED",
+    "b": "PENDING",
+    "c": "PENDING"
+  }
+}
