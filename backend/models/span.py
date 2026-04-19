@@ -14,6 +14,23 @@ class ChallengeType(StrEnum):
     NON_SEQUITUR         = "non_sequitur"
     PREMISE_CHECK        = "premise_check"
 
+# --- Internal pipeline models (not on the wire) ---
+
+class RawSpan(BaseModel):
+    """Output of the segmenter — sentence text with character offsets."""
+    text: str
+    start: int
+    end: int
+
+class ClassifiedSpan(RawSpan):
+    """Output of the classifier — a RawSpan plus its assigned fallacy_type,
+    confidence score, and confirmation status. `id` is set by main.py after
+    classification, before passing to the explainer."""
+    id: str | None = None
+    fallacy_type: str
+    confidence: float
+    status: Literal["confirmed", "possibly"]
+
 class Question(BaseModel):
     text: str
     yes_label: str

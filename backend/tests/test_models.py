@@ -6,8 +6,10 @@ from models.span import (
     AnalyzeResponse,
     Challenge,
     ChallengeType,
+    ClassifiedSpan,
     DependencyRule,
     Question,
+    RawSpan,
     SpanResult,
 )
 
@@ -54,4 +56,24 @@ def test_dependency_rule_rejects_lowercase_when():
             when="confirmed",
             effect="moot",
             reason="x",
+        )
+
+def test_raw_and_classified_span_construct_and_serialize():
+    raw = RawSpan(text="All scientists lie.", start=0, end=18)
+    classified = ClassifiedSpan(
+        **raw.model_dump(),
+        fallacy_type="Faulty Generalization",
+        confidence=0.91,
+        status="confirmed",
+    )
+    assert classified.id is None
+    data = classified.model_dump()
+    assert data["text"] == "All scientists lie."
+    assert data["fallacy_type"] == "Faulty Generalization"
+    assert data["status"] == "confirmed"
+
+    # `status` is a Literal — anything else must be rejected at construction.
+    with pytest.raises(ValidationError):
+        ClassifiedSpan(
+            text="x", start=0, end=1, fallacy_type="t", confidence=0.5, status="maybe",
         )
