@@ -92,12 +92,12 @@ DependencyRule {
   source_id:    str
   dependent_id: str
   when:         Resolution        # CONFIRMED | CLEARED
-  effect:       "moot" | "activate"
+  effect:       "moot"
   reason:       str               # shown to user when cascade fires
 }
 ```
 
-**Resolution states:** PENDING · CONFIRMED · CLEARED · MOOT · DORMANT
+**Resolution states:** PENDING · CONFIRMED · CLEARED · MOOT
 
 ---
 
@@ -122,7 +122,6 @@ When one span's challenge is only meaningful if another span's premise holds, th
 
 **Cascade behaviour:**
 - Source confirmed → dependent goes MOOT ("premise failed — argument collapsed at step one")
-- Source cleared → dependent activates from DORMANT ("premise granted — now test the connection")
 - Independent fallacies (no sequential logic) → no dependency rule, both cards remain active
 
 Users can always expand a MOOT card via "Review anyway →".

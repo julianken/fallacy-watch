@@ -1,6 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
+from typing import Literal
 
 class Resolution(str, Enum):
     PENDING   = "PENDING"
@@ -19,7 +20,7 @@ class DependencyRule:
     source_id: str
     dependent_id: str
     when: str
-    effect: str
+    effect: Literal["moot"]
     reason: str
 
 class FallacyCollection:
