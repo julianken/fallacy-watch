@@ -32,11 +32,10 @@ class FallacyCollection:
         cascades = []
         for rule in self.rules:
             if rule.source_id == span_id and rule.when == outcome.value:
-                if rule.effect != "moot":
-                    continue
-                dep = self.spans[rule.dependent_id]
-                dep.resolution = Resolution.MOOT
-                cascades.append((rule.dependent_id, Resolution.MOOT, rule.reason))
+                if rule.effect == "moot":
+                    dep = self.spans[rule.dependent_id]
+                    dep.resolution = Resolution.MOOT
+                    cascades.append((rule.dependent_id, Resolution.MOOT, rule.reason))
         return cascades
 
     def preview_cascade(self, span_id: str, outcome: Resolution) -> list[tuple[str, Resolution, str]]:
