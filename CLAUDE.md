@@ -50,6 +50,8 @@ OPENAI_API_KEY=<your key>             # required for GPT-4o mini explainer step
 ANALYZE_MAX_CONCURRENT=2              # optional: bounded semaphore on /analyze ML inference
 ANALYZE_RATE_LIMIT=10/minute          # optional: per-IP slowapi rate limit on /analyze
 ANALYZE_SKIP_WARMUP=1                 # optional: skip lifespan model warmup (used by tests)
+EXPLAINER_MAX_PAYLOAD_CHARS=50000     # optional: max chars in OpenAI prompt before fallback
+EXPLAINER_MAX_OUTPUT_TOKENS=2000      # optional: max output tokens for OpenAI parse call
 ```
 
 Copy `.env.example` to `.env` in `backend/` and fill in your key. The app degrades gracefully (template fallback content) if the key is missing or the API call fails.
