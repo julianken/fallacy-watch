@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import logging
 from enum import StrEnum
 from typing import Literal
 
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 
 class Resolution(StrEnum):
@@ -27,7 +30,15 @@ class DependencyRule(BaseModel):
 class FallacyCollection:
     def __init__(self, spans: list[Span], rules: list[DependencyRule]):
         self.spans: dict[str, Span] = {s.id: s for s in spans}
-        self.rules = rules
+        # Drop rules referencing unknown span IDs so a hallucinated LLM rule
+        # can't KeyError mid-resolve and leave the collection in a partial state.
+        valid_rules: list[DependencyRule] = []
+        for r in rules:
+            if r.source_id not in self.spans or r.dependent_id not in self.spans:
+                logger.warning("dropping cascade rule with unknown id(s): %r", r)
+                continue
+            valid_rules.append(r)
+        self.rules = valid_rules
 
     def resolve(self, span_id: str, outcome: Resolution) -> list[tuple[str, Resolution, str]]:
         self.spans[span_id].resolution = outcome

@@ -69,3 +69,24 @@ def test_preview_cascade_does_not_mutate():
     )
     col.preview_cascade("a", Resolution.CONFIRMED)
     assert col.spans["b"].resolution == Resolution.PENDING
+
+
+def test_rule_with_unknown_dependent_id_is_filtered(caplog):
+    bad = DependencyRule(source_id="a", dependent_id="ghost",
+                         when="CONFIRMED", effect="moot", reason="x")
+    good = DependencyRule(source_id="a", dependent_id="b",
+                          when="CONFIRMED", effect="moot", reason="real")
+    with caplog.at_level("WARNING", logger="models.collection"):
+        col = FallacyCollection(spans=[_span("a"), _span("b")], rules=[bad, good])
+    assert col.rules == [good]
+    cascades = col.resolve("a", Resolution.CONFIRMED)
+    assert cascades == [("b", Resolution.MOOT, "real")]
+    assert any("dropping cascade rule" in r.message for r in caplog.records)
+
+
+def test_rule_with_unknown_source_id_is_filtered():
+    bad = DependencyRule(source_id="ghost", dependent_id="a",
+                         when="CONFIRMED", effect="moot", reason="x")
+    col = FallacyCollection(spans=[_span("a")], rules=[bad])
+    assert col.rules == []
+    col.resolve("a", Resolution.CONFIRMED)
