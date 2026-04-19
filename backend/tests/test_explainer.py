@@ -3,10 +3,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from models.span import ClassifiedSpan
+from models.span import IdentifiedClassifiedSpan
 from pipeline.explainer import _SYSTEM_PROMPT, _fallback_content, generate_content
 
-SPANS = [ClassifiedSpan(
+SPANS = [IdentifiedClassifiedSpan(
     id="a", text="Everyone knows politicians lie",
     start=0, end=30, status="possibly",
     fallacy_type="ad populum", confidence=0.71,
@@ -81,7 +81,7 @@ def test_falls_back_when_payload_exceeds_limit(monkeypatch):
         from pipeline.explainer import generate_content as reloaded_generate_content
 
         big_text = "x" * 500
-        big_spans = [ClassifiedSpan(
+        big_spans = [IdentifiedClassifiedSpan(
             id="a", text=big_text,
             start=0, end=500, status="possibly",
             fallacy_type="ad populum", confidence=0.71,
@@ -120,7 +120,7 @@ def test_generate_content_real_openai_round_trip():
 
     Run locally: OPENAI_API_KEY=sk-... pytest -v -m slow tests/test_explainer.py
     """
-    real_span = ClassifiedSpan(
+    real_span = IdentifiedClassifiedSpan(
         id="a", text="Everyone knows politicians always lie.",
         start=0, end=38, status="possibly",
         fallacy_type="ad populum", confidence=0.71,

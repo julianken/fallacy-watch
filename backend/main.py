@@ -18,6 +18,7 @@ from models.span import (
     Challenge,
     ChallengeType,
     DependencyRule,
+    IdentifiedClassifiedSpan,
     Question,
     SpanResult,
 )
@@ -72,8 +73,13 @@ def _analyze_sync(req: AnalyzeRequest) -> AnalyzeResponse:
 
     seg = get_argument_spans(text)
     raw_spans = seg.spans
-    classified = [
-        span.model_copy(update={"id": f"span_{i}"})
+    # Stamp an id on each ClassifiedSpan and lift to IdentifiedClassifiedSpan
+    # so downstream consumers (explainer, _fallback_content) get a static
+    # guarantee that .id is non-None — no runtime assert needed.
+    classified: list[IdentifiedClassifiedSpan] = [
+        IdentifiedClassifiedSpan.model_validate(
+            {**span.model_dump(), "id": f"span_{i}"}
+        )
         for i, span in enumerate(classify_spans(raw_spans))
     ]
 
@@ -82,9 +88,6 @@ def _analyze_sync(req: AnalyzeRequest) -> AnalyzeResponse:
 
     spans_out: list[SpanResult] = []
     for span in classified:
-        # main.py stamps an id onto every classified span above; assert as a
-        # precondition so a future change that drops the stamp loop fails loud.
-        assert span.id is not None
         sid = span.id
         c = content_by_id.get(sid)
         model_generated = c is not None

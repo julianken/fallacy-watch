@@ -8,6 +8,7 @@ from models.span import (
     ChallengeType,
     ClassifiedSpan,
     DependencyRule,
+    IdentifiedClassifiedSpan,
     Question,
     RawSpan,
     SpanResult,
@@ -77,3 +78,19 @@ def test_raw_and_classified_span_construct_and_serialize():
         ClassifiedSpan(
             text="x", start=0, end=1, fallacy_type="t", confidence=0.5, status="maybe",
         )
+
+
+def test_identified_classified_span_requires_id():
+    # Subclass tightens id from `str | None = None` to `str` so the post-stamp
+    # pipeline (explainer + fallback) can rely on `.id` being non-None
+    # statically rather than via a runtime assert.
+    with pytest.raises(ValidationError):
+        IdentifiedClassifiedSpan(
+            text="x", start=0, end=1, fallacy_type="t", confidence=0.5, status="possibly",
+        )
+
+    span = IdentifiedClassifiedSpan(
+        id="span_0", text="x", start=0, end=1,
+        fallacy_type="t", confidence=0.5, status="possibly",
+    )
+    assert span.id == "span_0"
