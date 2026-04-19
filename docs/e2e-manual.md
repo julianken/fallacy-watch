@@ -17,7 +17,7 @@ cd frontend && npm run dev          # http://localhost:5173
 - `browser_navigate` — go to a URL
 - `browser_snapshot` — read current DOM/accessibility tree
 - `browser_take_screenshot` — capture visual state
-- `browser_fill` — fill a form field by label
+- `browser_type` — type text into a focused element (requires element ref from `browser_snapshot`)
 - `browser_click` — click an element
 - `browser_wait_for` — wait for text/selector to appear
 - `browser_evaluate` — run JS expressions in the page
@@ -33,7 +33,7 @@ cd frontend && npm run dev          # http://localhost:5173
    - Title "fallacy-watch" is visible
    - Textarea with placeholder "Paste any text to analyze for argument fallacies..." is present
    - "Analyze →" button is present
-3. `browser_evaluate` with expression `document.querySelector('button').disabled` — expect `true`
+3. `browser_evaluate` with expression `document.querySelector('[data-testid="analyze-button"]').disabled` — expect `true`
 4. **Pass condition:** button has `disabled` attribute; no results section is visible.
 
 ---
@@ -51,7 +51,8 @@ rules at all.
 ```
 
 1. `browser_navigate` to `http://localhost:5173`
-2. `browser_fill` textarea (label: `"Text to analyze for argument fallacies"`) with the sample text above
+2. `browser_snapshot` (to get textarea ref)
+   `browser_type` element: `"Textarea labeled 'Text to analyze for argument fallacies'"` ref: `<ref from snapshot>` text: `<sample text above>`
 3. `browser_snapshot` — confirm the "Analyze →" button is now enabled (not disabled)
 4. `browser_click` the "Analyze →" button
 5. `browser_wait_for` text `"Analyzing…"` to appear (loading state — button label changes)
@@ -160,8 +161,7 @@ rules at all.
 
 1. `browser_evaluate` to inspect the dependency rules:
    ```js
-   // Read rules from the page — App stores result in React state; extract from rendered DOM instead
-   // Count MootCards that appear after resolution to confirm cascade fired
+   // Count visible cards — cascade will add a MootCard if a dependency rule fires
    document.querySelectorAll('[id^="card-"]').length
    ```
    Note the total card count.
@@ -201,20 +201,23 @@ rules at all.
 3. `browser_snapshot` — confirm:
    - `MootCard` is **gone** for that span
    - A `ConfirmedCard` or `PossiblyCard` (matching `span.status`) now shows in its place with challenge buttons
-4. `browser_evaluate` — verify the highlight opacity has been restored:
+4. `browser_evaluate` — verify the previously-MOOT highlight's opacity has been restored:
    ```js
-   // After "Review anyway", the MOOT span returns to full opacity
-   // Note: browser_snapshot accessibility trees do not expose inline styles —
-   // this evaluate is the only way to verify opacity restoration
-   [...document.querySelectorAll('mark')].filter(m => m.style.opacity === '0.4').length
+   // After "Review anyway", the specific MOOT span returns to full opacity.
+   // We check only that span's mark, not all marks globally — other CLEARED spans
+   // from earlier steps may still be dimmed at 0.4 and that is correct behavior.
+   // Replace <moot-span-text> with the text content of the span that was MOOT.
+   [...document.querySelectorAll('mark')]
+     .find(m => m.textContent.includes('<moot-span-text>'))
+     ?.style.opacity !== '0.4'
    ```
-   Expect 0 (no marks are dimmed — the previously-MOOT highlight is back to full color).
+   Expect `true` — the mark for the previously-MOOT span is no longer dimmed.
 5. `browser_evaluate`:
    ```js
    document.querySelectorAll('button').length
    ```
    Should be higher than before (challenge buttons re-appeared).
-6. **Pass condition:** `MootCard` is replaced by a challenge card; `browser_evaluate` confirms no marks are dimmed.
+6. **Pass condition:** `MootCard` is replaced by a challenge card; `browser_evaluate` confirms the previously-MOOT mark is no longer dimmed.
 
 ---
 
@@ -258,7 +261,8 @@ Water boils at 100 degrees Celsius at sea level. Paris is the capital of France.
 ```
 
 1. `browser_navigate` to `http://localhost:5173`
-2. `browser_fill` textarea with the factual sample text
+2. `browser_snapshot` (to get textarea ref)
+   `browser_type` element: `"Textarea labeled 'Text to analyze for argument fallacies'"` ref: `<ref from snapshot>` text: `<factual sample text above>`
 3. `browser_click` "Analyze →"
 4. `browser_wait_for` either `"No argument fallacies detected."` or `"finding"` — timeout: 60 000 ms
 5. `browser_snapshot` — confirm:
@@ -279,7 +283,8 @@ Water boils at 100 degrees Celsius at sea level. Paris is the capital of France.
 **Setup:** Complete TC-02 and resolve at least one finding card (TC-03 or TC-04).
 
 1. After resolving ≥1 card, `browser_snapshot` — confirm at least one `ResolvedCard` is visible
-2. `browser_fill` textarea with new or the same sample text (overwrite is fine)
+2. `browser_snapshot` (to get textarea ref)
+   `browser_type` element: `"Textarea labeled 'Text to analyze for argument fallacies'"` ref: `<ref from snapshot>` text: `<new or same sample text>`
 3. `browser_click` "Analyze →"
 4. `browser_wait_for` text `"finding"` — timeout: 60 000 ms (new results loaded)
 5. `browser_snapshot` — confirm:
@@ -295,7 +300,8 @@ Water boils at 100 degrees Celsius at sea level. Paris is the capital of France.
 **Goal:** The UI shows a loading indicator and blocks re-submission while the backend is processing.
 
 1. `browser_navigate` to `http://localhost:5173`
-2. `browser_fill` textarea with the TC-02 sample text
+2. `browser_snapshot` (to get textarea ref)
+   `browser_type` element: `"Textarea labeled 'Text to analyze for argument fallacies'"` ref: `<ref from snapshot>` text: `<TC-02 sample text>`
 3. `browser_click` "Analyze →"
 4. `browser_wait_for` text `"Analyzing…"` — timeout: 3 000 ms (confirm loading state appeared before results arrive)
 5. `browser_snapshot` — confirm:
@@ -333,7 +339,8 @@ Water boils at 100 degrees Celsius at sea level. Paris is the capital of France.
 **Setup:** This test requires the backend to be running with an invalid API key. Have a human operator restart the backend as: `OPENAI_API_KEY=invalid uvicorn main:app --reload --port 8000`. The Playwright agent cannot execute terminal commands — confirm the backend is running in fallback mode before starting steps.
 
 1. `browser_navigate` to `http://localhost:5173`
-2. `browser_fill` textarea with the TC-02 sample text
+2. `browser_snapshot` (to get textarea ref)
+   `browser_type` element: `"Textarea labeled 'Text to analyze for argument fallacies'"` ref: `<ref from snapshot>` text: `<TC-02 sample text>`
 3. `browser_click` "Analyze →"
 4. `browser_wait_for` text `"finding"` — timeout: 60 000 ms
 5. `browser_snapshot` — look for the degraded badge in at least one challenge section:
@@ -354,7 +361,8 @@ Water boils at 100 degrees Celsius at sea level. Paris is the capital of France.
 **Setup:** Same as TC-14 — backend running with `OPENAI_API_KEY=invalid`. Requires at least two finding cards with different `fallacy_type` values.
 
 1. `browser_navigate` to `http://localhost:5173`
-2. `browser_fill` textarea with the TC-02 sample text
+2. `browser_snapshot` (to get textarea ref)
+   `browser_type` element: `"Textarea labeled 'Text to analyze for argument fallacies'"` ref: `<ref from snapshot>` text: `<TC-02 sample text>`
 3. `browser_click` "Analyze →"
 4. `browser_wait_for` text `"finding"` — timeout: 60 000 ms
 5. `browser_snapshot` — note the fallacy type shown in each card header (e.g. "Confirmed — Ad Hominem", "Confirmed — Slippery Slope")
@@ -444,5 +452,5 @@ Water boils at 100 degrees Celsius at sea level. Paris is the capital of France.
 | "Review anyway →" | `button` containing "Review anyway →" |
 | No-results message | `p` containing "No argument fallacies detected." |
 | Error message | `p` containing "Analysis failed" |
-| Metadata line | `p` containing "finding" |
+| Metadata line | `[data-testid="meta-line"]` |
 | Degraded badge | element containing "⚠ Detailed explanation unavailable" |
