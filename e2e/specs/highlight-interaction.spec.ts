@@ -3,11 +3,8 @@ import { AppPage } from '../pages/AppPage'
 import cascadePair from '../fixtures/cascade-pair.json'
 
 test.describe('highlight interaction', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 300 })
-  })
-
   test('clicking span_1 highlight scrolls to its card', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 300 })
     const app = new AppPage(page)
     await app.mockAnalyze(cascadePair)
     await app.goto()
@@ -19,6 +16,7 @@ test.describe('highlight interaction', () => {
   })
 
   test('clicking span_0 highlight scrolls to its card', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 300 })
     const app = new AppPage(page)
     await app.mockAnalyze(cascadePair)
     await app.goto()
