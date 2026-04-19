@@ -46,5 +46,46 @@ test.describe('challenge resolution', () => {
       await expect(app.cardPossibly('span_1')).not.toBeVisible()
       await expect(app.cardResolved('span_1')).toBeVisible()
     })
+
+    test('shows both if_legitimate and if_fallacy columns with text', async () => {
+      const card = app.cardPossibly('span_1')
+
+      await expect(card.getByText('IF LEGITIMATE', { exact: false })).toBeVisible()
+      await expect(card.getByText('IF A FALLACY', { exact: false })).toBeVisible()
+
+      await expect(card.getByText('The conclusion stands independently.')).toBeVisible()
+      await expect(card.getByText('The argument is circular.')).toBeVisible()
+    })
+  })
+
+  test('does not show legitimacy comparison when fields are null', async ({ page }) => {
+    const app = new AppPage(page)
+    const possiblyNoComparison = {
+      spans: [{
+        id: 'span_0',
+        text: 'All experts agree',
+        start: 0, end: 17,
+        status: 'possibly',
+        fallacy_type: 'Ad Populum',
+        explanation: 'Appeals to consensus.',
+        challenge: {
+          type: 'premise_check',
+          question: { text: 'Is this a fallacy?', yes_label: 'Yes', no_label: 'No' }
+        },
+        if_legitimate: null,
+        if_fallacy: null,
+        content_generated: true,
+      }],
+      rules: [],
+      meta: { sentence_count: 1, argument_span_count: 1, fallacy_count: 1, processing_ms: 10 },
+    } as Parameters<typeof app.mockAnalyze>[0]
+    await app.mockAnalyze(possiblyNoComparison)
+    await app.goto()
+    await app.fillAndAnalyze('All experts agree.')
+
+    await expect(app.cardPossibly('span_0')).toBeVisible()
+    await expect(
+      app.cardPossibly('span_0').getByText('IF LEGITIMATE', { exact: false })
+    ).not.toBeVisible()
   })
 })
