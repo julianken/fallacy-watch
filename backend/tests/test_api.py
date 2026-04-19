@@ -4,6 +4,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from models.span import ExplainerChallenge, ExplainerOutput, ExplainerQuestion, ExplainerSpan
+from pipeline.segmenter import SegmentationResult
 
 
 def _mock_explainer_output():
@@ -22,7 +23,11 @@ def _mock_explainer_output():
         dependency_rules=[],
     )
 
-MOCK_SEGMENTS = [{"text": "All scientists lie.", "start": 0, "end": 18}]
+MOCK_SEGMENTS = SegmentationResult(
+    spans=[{"text": "All scientists lie.", "start": 0, "end": 18}],
+    sentence_count=1,
+)
+EMPTY_SEGMENTS = SegmentationResult(spans=[], sentence_count=1)
 MOCK_CLASSIFIED = [{"text": "All scientists lie.", "start": 0, "end": 18,
                     "fallacy_type": "Faulty Generalization", "confidence": 0.91,
                     "status": "confirmed"}]
@@ -49,7 +54,7 @@ async def test_analyze_empty_text_returns_422():
 async def test_analyze_no_spans_returns_empty():
     from main import app
     empty = ExplainerOutput(spans=[], dependency_rules=[])
-    with (patch("main.get_argument_spans", return_value=[]),
+    with (patch("main.get_argument_spans", return_value=EMPTY_SEGMENTS),
           patch("main.classify_spans", return_value=[]),
           patch("main.generate_content", return_value=empty)):
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
@@ -62,7 +67,7 @@ async def test_analyze_no_spans_returns_empty():
 async def test_analyze_meta_not_truncated_for_short_input():
     from main import app
     empty = ExplainerOutput(spans=[], dependency_rules=[])
-    with (patch("main.get_argument_spans", return_value=[]),
+    with (patch("main.get_argument_spans", return_value=EMPTY_SEGMENTS),
           patch("main.classify_spans", return_value=[]),
           patch("main.generate_content", return_value=empty)):
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
@@ -78,7 +83,7 @@ async def test_analyze_meta_marks_truncated_when_input_exceeds_max_chars():
     from main import app
     empty = ExplainerOutput(spans=[], dependency_rules=[])
     long_text = "x" * 60_000
-    with (patch("main.get_argument_spans", return_value=[]),
+    with (patch("main.get_argument_spans", return_value=EMPTY_SEGMENTS),
           patch("main.classify_spans", return_value=[]),
           patch("main.generate_content", return_value=empty)):
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
@@ -106,7 +111,7 @@ async def test_analyze_rate_limits_after_threshold():
     # the limiter state before this test runs.
     from main import app
     empty = ExplainerOutput(spans=[], dependency_rules=[])
-    with (patch("main.get_argument_spans", return_value=[]),
+    with (patch("main.get_argument_spans", return_value=EMPTY_SEGMENTS),
           patch("main.classify_spans", return_value=[]),
           patch("main.generate_content", return_value=empty)):
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:

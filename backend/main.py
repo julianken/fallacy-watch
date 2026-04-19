@@ -23,7 +23,7 @@ from models.span import (
 )
 from pipeline.classifier import _load_resources, classify_spans
 from pipeline.explainer import _fallback_content, generate_content
-from pipeline.segmenter import _arg_classifier, _nlp, get_argument_spans
+from pipeline.segmenter import get_argument_spans
 
 
 @asynccontextmanager
@@ -34,8 +34,7 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     # the suite mocks the heavy pipeline functions and shouldn't pay the
     # ~30s mpnet/FAISS/spacy load cost on every collection.
     if os.environ.get("ANALYZE_SKIP_WARMUP") != "1":
-        _nlp()
-        _arg_classifier()
+        get_argument_spans("warmup.")
         _load_resources()
     yield
 
@@ -71,7 +70,8 @@ def _analyze_sync(req: AnalyzeRequest) -> AnalyzeResponse:
     text = req.text[: req.max_chars]
     truncated = len(text) < original_len
 
-    raw_spans = get_argument_spans(text)
+    seg = get_argument_spans(text)
+    raw_spans = seg.spans
     classified = classify_spans(raw_spans)
     for i, span in enumerate(classified):
         span["id"] = f"span_{i}"
@@ -121,7 +121,7 @@ def _analyze_sync(req: AnalyzeRequest) -> AnalyzeResponse:
         spans=spans_out,
         rules=rules_out,
         meta=AnalysisMeta(
-            sentence_count=len(list(_nlp()(text).sents)),
+            sentence_count=seg.sentence_count,
             argument_span_count=len(raw_spans),
             fallacy_count=sum(1 for s in spans_out if s.status == "confirmed"),
             processing_ms=ms,
