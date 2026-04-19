@@ -94,3 +94,27 @@ def test_identified_classified_span_requires_id():
         fallacy_type="t", confidence=0.5, status="possibly",
     )
     assert span.id == "span_0"
+
+
+def test_fixture_fallacy_types_are_canonical():
+    """Every fallacy_type used in test fixtures must appear in
+    logical_fallacy_labels.json.
+
+    conftest.FALLACY_LABELS exists to be the canonical source-of-truth for
+    test fixtures. Without an enforcement test, a typo like "ad-populum"
+    would only surface as a downstream silent mismatch. This test imports
+    the test-module fixture spans directly and asserts every fallacy_type
+    is in the canonical labels set.
+    """
+    from tests import test_api, test_explainer
+    from tests.conftest import FALLACY_LABELS
+
+    used = {s.fallacy_type for s in test_api.MOCK_CLASSIFIED}
+    used |= {s.fallacy_type for s in test_explainer.SPANS}
+
+    canonical = set(FALLACY_LABELS)
+    drift = used - canonical
+    assert not drift, (
+        f"test fixtures use fallacy_type(s) {drift!r} not in "
+        f"logical_fallacy_labels.json — fix the fixture or rebuild the index"
+    )
