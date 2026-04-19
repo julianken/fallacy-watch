@@ -3,8 +3,11 @@ import pathlib
 
 import faiss
 import numpy as np
+import sentence_transformers
 from datasets import load_dataset
 from sentence_transformers import SentenceTransformer
+
+from pipeline.classifier import EMBEDDER_MODEL, MPNET_REVISION
 
 DATA_DIR = pathlib.Path(__file__).parent
 
@@ -33,7 +36,7 @@ def build():
         labels = [str(lbl) for lbl in raw_labels]
 
     print(f"Encoding {len(texts)} examples with text_col={text_col!r}, label_col={label_col!r}...")
-    model = SentenceTransformer("all-mpnet-base-v2")
+    model = SentenceTransformer(EMBEDDER_MODEL, revision=MPNET_REVISION)
     embeddings = model.encode(
         texts,
         show_progress_bar=True,
@@ -49,7 +52,21 @@ def build():
 
     faiss.write_index(index, str(DATA_DIR / "logical_fallacy.index"))
     (DATA_DIR / "logical_fallacy_labels.json").write_text(json.dumps(labels))
+    # Sidecar lets the loader catch silent embedder/index drift — a regenerated
+    # index with a different mpnet checkpoint still has dim 768, so without
+    # this metadata FAISS would happily return degraded nearest neighbors.
+    meta = {
+        "embedder_model": EMBEDDER_MODEL,
+        "embedder_library_version": sentence_transformers.__version__,
+        "embedder_revision": MPNET_REVISION,
+        "embedding_dim": int(embeddings.shape[1]),
+        "vector_count": int(index.ntotal),
+    }
+    (DATA_DIR / "logical_fallacy.index.meta.json").write_text(
+        json.dumps(meta, indent=2) + "\n"
+    )
     print(f"Done. {index.ntotal} vectors. Labels sample: {labels[:3]}")
+    print(f"Wrote sidecar metadata: {meta}")
 
 
 if __name__ == "__main__":

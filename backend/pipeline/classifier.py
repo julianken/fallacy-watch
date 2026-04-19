@@ -1,6 +1,7 @@
 import json
 import logging
 import pathlib
+import warnings
 from functools import lru_cache
 
 import faiss
@@ -25,8 +26,34 @@ MPNET_REVISION = "e8c3b32edf5434bc2275fc9bab85f82640a19130"
 logger = logging.getLogger(__name__)
 
 
+def _verify_index_metadata() -> None:
+    # Sidecar is written by data/build_index.py. Asserting embedder_model
+    # match catches the silent failure mode where the index was built with a
+    # different sentence-transformer than the loader is about to instantiate
+    # — dimensions would still match, FAISS would return nearest neighbors,
+    # and classifications would quietly degrade with no error.
+    meta_path = DATA_DIR / "logical_fallacy.index.meta.json"
+    if not meta_path.exists():
+        warnings.warn(
+            "FAISS index has no .meta.json sidecar; cannot verify embedder "
+            "compatibility. Rebuild with `python data/build_index.py` to "
+            "enable this check.",
+            stacklevel=3,
+        )
+        return
+    meta = json.loads(meta_path.read_text())
+    indexed_embedder = meta.get("embedder_model")
+    if indexed_embedder != EMBEDDER_MODEL:
+        raise RuntimeError(
+            f"FAISS index was built with embedder {indexed_embedder!r} but "
+            f"classifier loads {EMBEDDER_MODEL!r}. Rebuild the index: "
+            f"python data/build_index.py"
+        )
+
+
 @lru_cache(maxsize=1)
 def _load_resources():
+    _verify_index_metadata()
     device = "cuda" if torch.cuda.is_available() else "cpu"
     logger.info("sentence-transformers device: %s", device)
     model = SentenceTransformer(EMBEDDER_MODEL, device=device, revision=MPNET_REVISION)

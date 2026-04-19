@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from pipeline.classifier import classify_spans
@@ -48,3 +50,85 @@ def test_threshold_determines_status(monkeypatch):
     monkeypatch.setattr(classifier, "_load_resources", lambda: (fake_model, fake_index2, fake_labels))
     result2 = classifier.classify_spans([{"text": "x", "start": 0, "end": 1}])
     assert result2[0]["status"] == "possibly"
+
+
+# Helper for sidecar tests: stub out the heavy SentenceTransformer/faiss loads
+# so we exercise only the metadata read+verify path. We seed _SENTINEL_SLOT with
+# a callable that returns a fake (model, index, labels) triple.
+def _stub_heavy_loads(monkeypatch, classifier_mod):
+    import types
+
+    fake_model = types.SimpleNamespace(encode=lambda *a, **k: None)
+    fake_index = types.SimpleNamespace(search=lambda *a, **k: None)
+    fake_labels = ["x"]
+
+    def fake_st(*args, **kwargs):
+        return fake_model
+
+    def fake_read_index(_path):
+        return fake_index
+
+    monkeypatch.setattr(classifier_mod, "SentenceTransformer", fake_st)
+    monkeypatch.setattr(classifier_mod.faiss, "read_index", fake_read_index)
+    return fake_model, fake_index, fake_labels
+
+
+def test_load_resources_warns_when_sidecar_missing(monkeypatch, tmp_path):
+    from pipeline import classifier
+
+    classifier._load_resources.cache_clear()
+
+    (tmp_path / "logical_fallacy.index").write_bytes(b"")
+    (tmp_path / "logical_fallacy_labels.json").write_text(json.dumps(["x"]))
+    # NOTE: no sidecar file written
+
+    monkeypatch.setattr(classifier, "DATA_DIR", tmp_path)
+    _stub_heavy_loads(monkeypatch, classifier)
+
+    with pytest.warns(UserWarning, match="meta.json"):
+        classifier._load_resources()
+    classifier._load_resources.cache_clear()
+
+
+def test_load_resources_raises_on_embedder_mismatch(monkeypatch, tmp_path):
+    from pipeline import classifier
+
+    classifier._load_resources.cache_clear()
+
+    (tmp_path / "logical_fallacy.index").write_bytes(b"")
+    (tmp_path / "logical_fallacy_labels.json").write_text(json.dumps(["x"]))
+    (tmp_path / "logical_fallacy.index.meta.json").write_text(json.dumps({
+        "embedder_model": "some-other-embedder",
+        "embedder_library_version": "0.0.0",
+        "embedding_dim": 768,
+        "vector_count": 1,
+    }))
+
+    monkeypatch.setattr(classifier, "DATA_DIR", tmp_path)
+    _stub_heavy_loads(monkeypatch, classifier)
+
+    with pytest.raises(RuntimeError, match="some-other-embedder"):
+        classifier._load_resources()
+    classifier._load_resources.cache_clear()
+
+
+def test_load_resources_accepts_matching_sidecar(monkeypatch, tmp_path):
+    from pipeline import classifier
+
+    classifier._load_resources.cache_clear()
+
+    (tmp_path / "logical_fallacy.index").write_bytes(b"")
+    (tmp_path / "logical_fallacy_labels.json").write_text(json.dumps(["x"]))
+    (tmp_path / "logical_fallacy.index.meta.json").write_text(json.dumps({
+        "embedder_model": classifier.EMBEDDER_MODEL,
+        "embedder_library_version": "5.4.1",
+        "embedding_dim": 768,
+        "vector_count": 1,
+    }))
+
+    monkeypatch.setattr(classifier, "DATA_DIR", tmp_path)
+    _stub_heavy_loads(monkeypatch, classifier)
+
+    model, index, labels = classifier._load_resources()
+    assert labels == ["x"]
+    classifier._load_resources.cache_clear()
