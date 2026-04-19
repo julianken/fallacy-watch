@@ -74,7 +74,12 @@ source .venv/bin/activate
 python data/build_index.py
 ```
 
-Outputs `backend/data/logical_fallacy.index` and `backend/data/logical_fallacy_labels.json`. Commit both.
+Outputs three files in `backend/data/`:
+- `logical_fallacy.index` — the FAISS vector store
+- `logical_fallacy_labels.json` — parallel label list
+- `logical_fallacy.index.meta.json` — sidecar with embedder name/version/SHA + dim + count
+
+Commit all three. The classifier reads the sidecar at startup and refuses to load if `embedder_model` doesn't match, catching the silent-degradation case where the index was built with a different mpnet checkpoint than the loader instantiates.
 
 ## Code conventions
 

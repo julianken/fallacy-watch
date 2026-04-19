@@ -1,0 +1,7 @@
+{
+  "embedder_model": "all-mpnet-base-v2",
+  "embedder_library_version": "5.4.1",
+  "embedder_revision": "e8c3b32edf5434bc2275fc9bab85f82640a19130",
+  "embedding_dim": 768,
+  "vector_count": 2680
+}
