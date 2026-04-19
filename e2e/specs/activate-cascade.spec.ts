@@ -15,6 +15,7 @@ test.describe('activate cascade', () => {
 
     // Now resolve span_0 — this fires the activate rule targeting span_1
     await app.cardConfirmed('span_0').getByRole('button', { name: 'Yes fallacy' }).click()
+    await expect(app.cardResolved('span_0')).toBeVisible()
 
     // span_1 must STILL be resolved — activate must not overwrite it
     await expect(app.cardResolved('span_1')).toBeVisible()
