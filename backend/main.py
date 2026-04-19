@@ -31,7 +31,9 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
         raise HTTPException(status_code=422, detail="text must not be empty")
 
     t0 = time.monotonic()
+    original_len = len(req.text)
     text = req.text[: req.max_chars]
+    truncated = len(text) < original_len
 
     raw_spans = get_argument_spans(text)
     classified = classify_spans(raw_spans)
@@ -87,5 +89,7 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
             argument_span_count=len(raw_spans),
             fallacy_count=sum(1 for s in spans_out if s.status == "confirmed"),
             processing_ms=ms,
+            truncated=truncated,
+            original_char_count=original_len if truncated else None,
         ),
     )

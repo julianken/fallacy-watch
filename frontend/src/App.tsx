@@ -4,6 +4,7 @@ import { analyze } from './api'
 import { TextInput } from './components/TextInput'
 import { AnnotatedText } from './components/AnnotatedText'
 import { FindingsList } from './components/FindingsList'
+import { TruncationBanner } from './components/TruncationBanner'
 import { useFallacyCollection } from './hooks/useFallacyCollection'
 
 export default function App() {
@@ -30,6 +31,7 @@ export default function App() {
       <p style={{ opacity: 0.5, marginBottom: 24 }}>Analyze any text for argument fallacies.</p>
       <TextInput onAnalyze={handleAnalyze} loading={loading} />
       {error && <p data-testid="error-message" style={{ color: '#fca5a5', marginBottom: 16 }}>{error}</p>}
+      {result && !loading && <TruncationBanner meta={result.meta} />}
       {result && !loading && (
         result.spans.length === 0
           ? <p data-testid="no-fallacies-message" style={{ opacity: 0.5 }}>No argument fallacies detected.</p>

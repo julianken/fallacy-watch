@@ -48,10 +48,18 @@ class AnalysisMeta(BaseModel):
     argument_span_count: int
     fallacy_count: int
     processing_ms: int
+    truncated: bool = False
+    original_char_count: int | None = None
+
+# Absolute server-side cap on /analyze input. A request larger than this is
+# rejected at the schema layer before the server allocates the full payload —
+# this is the cheap DoS guard. max_chars (below) is the soft cap that controls
+# truncation after acceptance.
+_HARD_MAX_TEXT_CHARS = 100_000
 
 class AnalyzeRequest(BaseModel):
-    text: str
-    max_chars: int = Field(default=20_000, gt=0)
+    text: str = Field(..., max_length=_HARD_MAX_TEXT_CHARS, min_length=1)
+    max_chars: int = Field(default=20_000, gt=0, le=_HARD_MAX_TEXT_CHARS)
 
 class AnalyzeResponse(BaseModel):
     spans: list[SpanResult]
