@@ -1,4 +1,7 @@
+import os
 import time
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,11 +16,26 @@ from models.span import (
     Question,
     SpanResult,
 )
-from pipeline.classifier import classify_spans
+from pipeline.classifier import _load_resources, classify_spans
 from pipeline.explainer import _fallback_content, generate_content
-from pipeline.segmenter import _nlp, get_argument_spans
+from pipeline.segmenter import _arg_classifier, _nlp, get_argument_spans
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    # Eager warmup — populates lru_caches so the first concurrent request can't
+    # race two threads into the same loader, and surfaces missing model files
+    # at boot instead of as a 500 on the first user request. Skip in test runs:
+    # the suite mocks the heavy pipeline functions and shouldn't pay the
+    # ~30s mpnet/FAISS/spacy load cost on every collection.
+    if os.environ.get("ANALYZE_SKIP_WARMUP") != "1":
+        _nlp()
+        _arg_classifier()
+        _load_resources()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
