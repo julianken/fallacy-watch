@@ -6,6 +6,8 @@ import spacy
 import torch
 from transformers import pipeline as hf_pipeline
 
+from models.span import RawSpan
+
 logger = logging.getLogger(__name__)
 
 # Pin the HuggingFace model to a specific commit SHA. Without this we'd track
@@ -21,7 +23,7 @@ ROBERTA_ARGUMENT_REVISION = "7c0e6b88c91828ba07dfc473d2d11628e3b734fc"
 
 
 class SegmentationResult(NamedTuple):
-    spans: list[dict]
+    spans: list[RawSpan]
     sentence_count: int
 
 
@@ -53,7 +55,7 @@ def get_argument_spans(text: str) -> SegmentationResult:
     # transformers stubs type the pipeline return as a broad union (incl. None);
     # at runtime it's a list[dict[str, str]] when called with a list of strings.
     spans = [
-        {"text": sent.text, "start": sent.start_char, "end": sent.end_char}
+        RawSpan(text=sent.text, start=sent.start_char, end=sent.end_char)
         for sent, label in zip(sentences, labels, strict=True)
         if label["label"] == "ARGUMENT"
     ]

@@ -9,6 +9,8 @@ import numpy as np
 import torch
 from sentence_transformers import SentenceTransformer
 
+from models.span import ClassifiedSpan, RawSpan
+
 DATA_DIR = pathlib.Path(__file__).parent.parent / "data"
 CONFIDENCE_THRESHOLD = 0.82
 EMBEDDER_MODEL = "all-mpnet-base-v2"
@@ -62,22 +64,22 @@ def _load_resources():
     return model, index, labels
 
 
-def classify_spans(spans: list[dict]) -> list[dict]:
+def classify_spans(spans: list[RawSpan]) -> list[ClassifiedSpan]:
     if not spans:
         return []
     model, index, labels = _load_resources()
     embeddings = model.encode(
-        [s["text"] for s in spans], batch_size=32, normalize_embeddings=True
+        [s.text for s in spans], batch_size=32, normalize_embeddings=True
     )
     embeddings = np.array(embeddings, dtype="float32")
     distances, indices = index.search(embeddings, k=1)
-    result = []
+    result: list[ClassifiedSpan] = []
     for span, dist, idx in zip(spans, distances, indices, strict=True):
         confidence = float(dist[0])
-        result.append({
-            **span,
-            "fallacy_type": labels[int(idx[0])],
-            "confidence": confidence,
-            "status": "confirmed" if confidence >= CONFIDENCE_THRESHOLD else "possibly",
-        })
+        result.append(ClassifiedSpan(
+            **span.model_dump(),
+            fallacy_type=labels[int(idx[0])],
+            confidence=confidence,
+            status="confirmed" if confidence >= CONFIDENCE_THRESHOLD else "possibly",
+        ))
     return result

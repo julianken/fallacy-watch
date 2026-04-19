@@ -72,16 +72,20 @@ def _analyze_sync(req: AnalyzeRequest) -> AnalyzeResponse:
 
     seg = get_argument_spans(text)
     raw_spans = seg.spans
-    classified = classify_spans(raw_spans)
-    for i, span in enumerate(classified):
-        span["id"] = f"span_{i}"
+    classified = [
+        span.model_copy(update={"id": f"span_{i}"})
+        for i, span in enumerate(classify_spans(raw_spans))
+    ]
 
     explainer_out = generate_content(classified, text)
     content_by_id = {s.id: s for s in explainer_out.spans}
 
     spans_out: list[SpanResult] = []
     for span in classified:
-        sid = span["id"]
+        # main.py stamps an id onto every classified span above; assert as a
+        # precondition so a future change that drops the stamp loop fails loud.
+        assert span.id is not None
+        sid = span.id
         c = content_by_id.get(sid)
         model_generated = c is not None
         if c is None:
@@ -89,11 +93,11 @@ def _analyze_sync(req: AnalyzeRequest) -> AnalyzeResponse:
         ch = c.challenge
         spans_out.append(SpanResult(
             id=sid,
-            text=span["text"],
-            start=span["start"],
-            end=span["end"],
-            status=span["status"],
-            fallacy_type=span["fallacy_type"],
+            text=span.text,
+            start=span.start,
+            end=span.end,
+            status=span.status,
+            fallacy_type=span.fallacy_type,
             explanation=c.explanation,
             challenge=Challenge(
                 type=ChallengeType(ch.type),
