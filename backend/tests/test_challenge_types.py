@@ -1,12 +1,23 @@
+import pytest
 from pipeline.challenge_types import challenge_type_for
 
-def test_known_mappings():
-    assert challenge_type_for("Faulty Generalization") == "counterexample"
-    assert challenge_type_for("Fallacy of Credibility") == "domain_check"
-    assert challenge_type_for("Equivocation") == "meaning_check"
-    assert challenge_type_for("Fallacy of Extension") == "representation_check"
-    assert challenge_type_for("False Dilemma") == "non_sequitur"
-    assert challenge_type_for("Ad Populum") == "premise_check"
-
-def test_unknown_type_returns_non_sequitur():
-    assert challenge_type_for("unknown") == "non_sequitur"
+@pytest.mark.parametrize("label,expected", [
+    # 13 runtime labels (all lowercase, as produced by classifier.py)
+    ("ad populum",             "premise_check"),
+    ("appeal to emotion",      "premise_check"),
+    ("circular reasoning",     "premise_check"),
+    ("faulty generalization",  "counterexample"),
+    ("false causality",        "counterexample"),
+    ("fallacy of credibility", "domain_check"),
+    ("equivocation",           "meaning_check"),
+    ("fallacy of extension",   "representation_check"),
+    ("fallacy of logic",       "non_sequitur"),
+    ("fallacy of relevance",   "non_sequitur"),
+    ("false dilemma",          "non_sequitur"),
+    ("ad hominem",             "non_sequitur"),
+    ("intentional",            "non_sequitur"),
+    # 1 synthetic default case
+    ("unknown label",          "non_sequitur"),
+])
+def test_challenge_type_for(label: str, expected: str) -> None:
+    assert challenge_type_for(label) == expected
