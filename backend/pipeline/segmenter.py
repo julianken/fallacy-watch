@@ -1,8 +1,12 @@
+import logging
 from functools import lru_cache
 from typing import NamedTuple
 
 import spacy
+import torch
 from transformers import pipeline as hf_pipeline
+
+logger = logging.getLogger(__name__)
 
 
 class SegmentationResult(NamedTuple):
@@ -16,10 +20,12 @@ def _nlp():
 
 @lru_cache(maxsize=1)
 def _arg_classifier():
+    device = 0 if torch.cuda.is_available() else -1
+    logger.info("roberta-argument device: %s", "cuda:0" if device == 0 else "cpu")
     return hf_pipeline(
         "text-classification",
         model="chkla/roberta-argument",
-        device=-1,
+        device=device,
     )
 
 def get_argument_spans(text: str) -> SegmentationResult:

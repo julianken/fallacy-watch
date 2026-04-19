@@ -1,18 +1,24 @@
 import json
+import logging
 import pathlib
 from functools import lru_cache
 
 import faiss
 import numpy as np
+import torch
 from sentence_transformers import SentenceTransformer
 
 DATA_DIR = pathlib.Path(__file__).parent.parent / "data"
 CONFIDENCE_THRESHOLD = 0.82
 
+logger = logging.getLogger(__name__)
+
 
 @lru_cache(maxsize=1)
 def _load_resources():
-    model = SentenceTransformer("all-mpnet-base-v2")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    logger.info("sentence-transformers device: %s", device)
+    model = SentenceTransformer("all-mpnet-base-v2", device=device)
     index = faiss.read_index(str(DATA_DIR / "logical_fallacy.index"))
     labels = json.loads((DATA_DIR / "logical_fallacy_labels.json").read_text())
     return model, index, labels
