@@ -1,14 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import * as fs from 'node:fs'
-import * as path from 'node:path'
 import { useFallacyCollection } from './useFallacyCollection'
 import type { DependencyRule, Resolution, SpanResult } from '../types'
-
-// Shared golden fixtures live OUTSIDE frontend/ so the Python collection can
-// read the same files. Drift between the two implementations becomes a test-
-// time error in whichever language regressed.
-const FIXTURES_DIR = path.resolve(__dirname, '../../../fixtures/cascade-contract')
 
 interface FixtureSpan { id: string; status: string }
 interface FixtureRule {
@@ -27,10 +20,19 @@ interface CascadeFixture {
   expected_final_state: Record<string, Resolution>
 }
 
-const fixtures = fs
-  .readdirSync(FIXTURES_DIR)
-  .filter(f => f.endsWith('.json'))
-  .sort()
+// Shared golden fixtures live OUTSIDE frontend/ so the Python collection can
+// read the same files. Drift between the two implementations becomes a test-
+// time error in whichever language regressed. We use Vite's import.meta.glob
+// (resolved at build time) instead of Node fs so the test type-checks under
+// the browser-only tsconfig (no @types/node, ESM, no __dirname).
+const fixtureModules = import.meta.glob<CascadeFixture>(
+  '../../../fixtures/cascade-contract/*.json',
+  { eager: true, import: 'default' },
+)
+
+const fixtures: Array<{ path: string; fx: CascadeFixture }> = Object.entries(fixtureModules)
+  .map(([p, fx]) => ({ path: p, fx }))
+  .sort((a, b) => a.path.localeCompare(b.path))
 
 function asSpanResults(spans: FixtureSpan[]): SpanResult[] {
   // The hook only consumes id and status from each span (init + statusOf
@@ -56,11 +58,8 @@ function asDependencyRules(rules: FixtureRule[]): DependencyRule[] {
 }
 
 describe('cascade contract', () => {
-  for (const file of fixtures) {
-    const fx: CascadeFixture = JSON.parse(
-      fs.readFileSync(path.join(FIXTURES_DIR, file), 'utf8'),
-    )
-    it(fx.name, () => {
+  for (const { path, fx } of fixtures) {
+    it(fx.name || path, () => {
       const { result } = renderHook(() =>
         useFallacyCollection(asSpanResults(fx.spans), asDependencyRules(fx.rules), 'run-1'),
       )
