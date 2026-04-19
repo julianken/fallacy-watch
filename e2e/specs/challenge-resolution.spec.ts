@@ -78,7 +78,7 @@ test.describe('challenge resolution', () => {
       }],
       rules: [],
       meta: { sentence_count: 1, argument_span_count: 1, fallacy_count: 1, processing_ms: 10 },
-    } as Parameters<typeof app.mockAnalyze>[0]
+    }
     await app.mockAnalyze(possiblyNoComparison)
     await app.goto()
     await app.fillAndAnalyze('All experts agree.')
@@ -86,6 +86,9 @@ test.describe('challenge resolution', () => {
     await expect(app.cardPossibly('span_0')).toBeVisible()
     await expect(
       app.cardPossibly('span_0').getByText('IF LEGITIMATE', { exact: false })
+    ).not.toBeVisible()
+    await expect(
+      app.cardPossibly('span_0').getByText('IF A FALLACY', { exact: false })
     ).not.toBeVisible()
   })
 })
