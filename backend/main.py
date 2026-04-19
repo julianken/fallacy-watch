@@ -1,8 +1,10 @@
+import asyncio
 import os
 import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
+import anyio.to_thread
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -43,8 +45,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.post("/analyze", response_model=AnalyzeResponse)
-def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
+# Bounded concurrency for /analyze. Sized to available hardware via env var so
+# we don't spawn N parallel torch invocations per worker — see issue #37.
+_ANALYZE_MAX_CONCURRENT = int(os.environ.get("ANALYZE_MAX_CONCURRENT", "2"))
+_analyze_semaphore = asyncio.Semaphore(_ANALYZE_MAX_CONCURRENT)
+
+
+def _analyze_sync(req: AnalyzeRequest) -> AnalyzeResponse:
     if not req.text.strip():
         raise HTTPException(status_code=422, detail="text must not be empty")
 
@@ -111,3 +118,9 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
             original_char_count=original_len if truncated else None,
         ),
     )
+
+
+@app.post("/analyze", response_model=AnalyzeResponse)
+async def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
+    async with _analyze_semaphore:
+        return await anyio.to_thread.run_sync(_analyze_sync, req)
