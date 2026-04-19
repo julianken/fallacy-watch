@@ -39,21 +39,27 @@ NON_ARG = "The weather in Paris is often mild in spring."
 
 @pytest.mark.slow
 def test_returns_segmentation_result():
+    from models.span import RawSpan
+
     result = get_argument_spans(ARGUMENTATIVE)
     assert isinstance(result, SegmentationResult)
     assert isinstance(result.spans, list)
+    assert all(isinstance(s, RawSpan) for s in result.spans)
     assert isinstance(result.sentence_count, int)
 
 @pytest.mark.slow
 def test_argumentative_sentence_included():
     result = get_argument_spans(ARGUMENTATIVE)
-    assert any(ARGUMENTATIVE[:20] in s["text"] for s in result.spans)
+    assert any(ARGUMENTATIVE[:20] in s.text for s in result.spans)
 
 @pytest.mark.slow
-def test_span_has_required_keys():
+def test_span_has_required_fields():
     result = get_argument_spans(ARGUMENTATIVE)
     assert len(result.spans) > 0
-    assert {"text", "start", "end"} <= result.spans[0].keys()
+    span = result.spans[0]
+    assert isinstance(span.text, str)
+    assert isinstance(span.start, int)
+    assert isinstance(span.end, int)
 
 @pytest.mark.slow
 def test_empty_text_returns_empty():

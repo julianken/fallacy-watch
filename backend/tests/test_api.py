@@ -3,7 +3,13 @@ from unittest.mock import patch
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from models.span import ExplainerChallenge, ExplainerOutput, ExplainerQuestion, ExplainerSpan
+from models.span import (
+    ExplainerChallenge,
+    ExplainerOutput,
+    ExplainerQuestion,
+    ExplainerSpan,
+    RawSpan,
+)
 from pipeline.segmenter import SegmentationResult
 
 
@@ -24,7 +30,7 @@ def _mock_explainer_output():
     )
 
 MOCK_SEGMENTS = SegmentationResult(
-    spans=[{"text": "All scientists lie.", "start": 0, "end": 18}],
+    spans=[RawSpan(text="All scientists lie.", start=0, end=18)],
     sentence_count=1,
 )
 EMPTY_SEGMENTS = SegmentationResult(spans=[], sentence_count=1)
