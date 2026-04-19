@@ -1,8 +1,38 @@
+import pytest
+from pydantic import BaseModel, ValidationError
+
 from models.collection import DependencyRule, FallacyCollection, Resolution, Span
 
 
 def _span(id, status="possibly"):
     return Span(id=id, status=status, resolution=Resolution.PENDING)
+
+
+def test_span_and_dependency_rule_are_pydantic():
+    assert issubclass(Span, BaseModel)
+    assert issubclass(DependencyRule, BaseModel)
+
+
+def test_dependency_rule_rejects_lowercase_when():
+    with pytest.raises(ValidationError):
+        DependencyRule(
+            source_id="a",
+            dependent_id="b",
+            when="confirmed",
+            effect="moot",
+            reason="x",
+        )
+
+
+def test_dependency_rule_rejects_pending_when():
+    with pytest.raises(ValidationError):
+        DependencyRule(
+            source_id="a",
+            dependent_id="b",
+            when="PENDING",
+            effect="moot",
+            reason="x",
+        )
 
 def test_resolve_confirmed_cascades_moot():
     col = FallacyCollection(
@@ -39,3 +69,24 @@ def test_preview_cascade_does_not_mutate():
     )
     col.preview_cascade("a", Resolution.CONFIRMED)
     assert col.spans["b"].resolution == Resolution.PENDING
+
+
+def test_rule_with_unknown_dependent_id_is_filtered(caplog):
+    bad = DependencyRule(source_id="a", dependent_id="ghost",
+                         when="CONFIRMED", effect="moot", reason="x")
+    good = DependencyRule(source_id="a", dependent_id="b",
+                          when="CONFIRMED", effect="moot", reason="real")
+    with caplog.at_level("WARNING", logger="models.collection"):
+        col = FallacyCollection(spans=[_span("a"), _span("b")], rules=[bad, good])
+    assert col.rules == [good]
+    cascades = col.resolve("a", Resolution.CONFIRMED)
+    assert cascades == [("b", Resolution.MOOT, "real")]
+    assert any("dropping cascade rule" in r.message for r in caplog.records)
+
+
+def test_rule_with_unknown_source_id_is_filtered():
+    bad = DependencyRule(source_id="ghost", dependent_id="a",
+                         when="CONFIRMED", effect="moot", reason="x")
+    col = FallacyCollection(spans=[_span("a")], rules=[bad])
+    assert col.rules == []
+    col.resolve("a", Resolution.CONFIRMED)
