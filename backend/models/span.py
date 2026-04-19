@@ -31,6 +31,26 @@ class ClassifiedSpan(RawSpan):
     confidence: float
     status: Literal["confirmed", "possibly"]
 
+
+class IdentifiedClassifiedSpan(RawSpan):
+    """A ClassifiedSpan that has been stamped with an `id` by main.py.
+
+    Mirrors ClassifiedSpan's fields but with `id: str` required, so pyright
+    can statically catch callers that try to pass an unstamped span into the
+    post-stamp pipeline (the explainer + fallback path) — replacing a runtime
+    `assert span.id is not None` with a static guarantee.
+
+    Defined as a sibling of ClassifiedSpan rather than a subclass because
+    pyright treats Pydantic field overrides as mutable-and-invariant: a
+    `str | None = None` parent field cannot be narrowed to `str` in a child
+    without raising reportIncompatibleVariableOverride. Sibling models avoid
+    that constraint.
+    """
+    id: str
+    fallacy_type: str
+    confidence: float
+    status: Literal["confirmed", "possibly"]
+
 class Question(BaseModel):
     text: str
     yes_label: str

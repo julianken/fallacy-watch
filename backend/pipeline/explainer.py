@@ -6,11 +6,11 @@ from typing import Literal, cast
 from openai import OpenAI
 
 from models.span import (
-    ClassifiedSpan,
     ExplainerChallenge,
     ExplainerOutput,
     ExplainerQuestion,
     ExplainerSpan,
+    IdentifiedClassifiedSpan,
 )
 from pipeline.challenge_types import challenge_type_for
 
@@ -67,17 +67,13 @@ _TEMPLATE_QUESTIONS = {
                              "Well established → not a fallacy"),
 }
 
-def _fallback_content(spans: list[ClassifiedSpan]) -> ExplainerOutput:
+def _fallback_content(spans: list[IdentifiedClassifiedSpan]) -> ExplainerOutput:
     result_spans = []
     for span in spans:
         # challenge_type_for returns one of the keys of _TEMPLATE_QUESTIONS,
         # which is exactly ChallengeTypeLiteral; cast to the narrower type.
         ct = cast(ChallengeTypeLiteral, challenge_type_for(span.fallacy_type))
         q_text, yes_lbl, no_lbl = _TEMPLATE_QUESTIONS[ct]
-        # main.py stamps an id onto every span before this is reached; assert
-        # it as a precondition so a bug upstream surfaces here, not as a silent
-        # `id=None` propagating into the wire response.
-        assert span.id is not None, "span.id must be set before _fallback_content"
         result_spans.append(ExplainerSpan(
             id=span.id,
             explanation=f"Possibly a {span.fallacy_type}.",
@@ -91,7 +87,7 @@ def _fallback_content(spans: list[ClassifiedSpan]) -> ExplainerOutput:
     return ExplainerOutput(spans=result_spans, dependency_rules=[])
 
 def generate_content(
-    spans: list[ClassifiedSpan],
+    spans: list[IdentifiedClassifiedSpan],
     full_text: str,
     client: OpenAI | None = None,
 ) -> ExplainerOutput:
