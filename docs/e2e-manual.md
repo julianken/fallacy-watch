@@ -368,13 +368,18 @@ Water boils at 100 degrees Celsius at sea level. Paris is the capital of France.
 5. `browser_snapshot` — note the fallacy type shown in each card header (e.g. "Confirmed — Ad Hominem", "Confirmed — Slippery Slope")
 6. `browser_evaluate`:
    ```js
-   // Collect first 60 chars of each card's first <p> to compare challenge text
-   [...document.querySelectorAll('[id^="card-"]')].map(card => ({
-     header: card.querySelector('strong')?.textContent?.trim(),
-     challengeSnippet: card.querySelector('p')?.textContent?.trim().slice(0, 80)
-   }))
+   // Use card id (e.g. "card-possibly-span_0") as the identifier — <strong> is not
+   // used in card headers. Use the last <p> to skip the degraded-mode banner, which
+   // renders as the first <p> when OPENAI_API_KEY is invalid.
+   [...document.querySelectorAll('[id^="card-"]')].map(card => {
+     const ps = card.querySelectorAll('p');
+     return {
+       cardId: card.id,
+       challengeSnippet: ps[ps.length - 1]?.textContent?.trim().slice(0, 80)
+     };
+   })
    ```
-   Each entry's `challengeSnippet` should differ when the headers show different fallacy types. If every snippet is identical (especially if it references "non sequitur"), the `_MAP` lookup is failing.
+   Each entry's `challengeSnippet` should differ when the card IDs show different fallacy types. If every snippet is identical (especially if it references "non sequitur"), the `_MAP` lookup is failing.
 7. `browser_take_screenshot`
 8. **Pass condition:** Cards with different fallacy types show distinct challenge text. Identical challenge text across cards with different types is a failure.
 
