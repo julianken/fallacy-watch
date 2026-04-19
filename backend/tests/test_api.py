@@ -37,7 +37,7 @@ MOCK_SEGMENTS = SegmentationResult(
 EMPTY_SEGMENTS = SegmentationResult(spans=[], sentence_count=1)
 MOCK_CLASSIFIED = [ClassifiedSpan(
     text="All scientists lie.", start=0, end=18,
-    fallacy_type="Faulty Generalization", confidence=0.91,
+    fallacy_type="faulty generalization", confidence=0.91,
     status="confirmed",
 )]
 
@@ -50,7 +50,7 @@ async def test_analyze_returns_spans():
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
             resp = await c.post("/analyze", json={"text": "All scientists lie."})
     assert resp.status_code == 200
-    assert resp.json()["spans"][0]["fallacy_type"] == "Faulty Generalization"
+    assert resp.json()["spans"][0]["fallacy_type"] == "faulty generalization"
 
 @pytest.mark.asyncio
 async def test_analyze_empty_text_returns_422():

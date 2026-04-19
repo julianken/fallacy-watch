@@ -6,7 +6,7 @@ from pipeline.explainer import _SYSTEM_PROMPT, _fallback_content, generate_conte
 SPANS = [ClassifiedSpan(
     id="a", text="Everyone knows politicians lie",
     start=0, end=30, status="possibly",
-    fallacy_type="Ad Populum", confidence=0.71,
+    fallacy_type="ad populum", confidence=0.71,
 )]
 
 def _mock_parsed():
@@ -77,7 +77,7 @@ def test_falls_back_when_payload_exceeds_limit(monkeypatch):
     big_spans = [ClassifiedSpan(
         id="a", text=big_text,
         start=0, end=500, status="possibly",
-        fallacy_type="Ad Populum", confidence=0.71,
+        fallacy_type="ad populum", confidence=0.71,
     )]
     mock_client = MagicMock()
     result = reloaded_generate_content(big_spans, big_text, client=mock_client)
