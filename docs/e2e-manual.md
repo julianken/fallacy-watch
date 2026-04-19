@@ -387,33 +387,6 @@ Water boils at 100 degrees Celsius at sea level. Paris is the capital of France.
 
 ---
 
-## TC-B — Activate cascade does not overwrite resolved spans
-
-**Goal:** When a cascade rule with `effect: "activate"` fires, it does NOT reset spans the user has already resolved. Previously-resolved cards must stay resolved.
-
-**Note:** This tests the guard missing in `useFallacyCollection.ts` — `getCascades` currently maps `activate` rules to `'PENDING'` with no check on existing resolution state.
-
-**Setup:** Complete TC-02. Requires at least one `activate` dependency rule in the response. If the response contains no `activate` rules, mark N/A.
-
-1. `browser_snapshot` — confirm at least 2 unresolved cards are visible
-2. Resolve one card using either YES or NO. Note the card ID and which resolution (CONFIRMED or CLEARED)
-3. `browser_snapshot` — confirm that card shows a `ResolvedCard` badge (no challenge buttons)
-4. Resolve a different card that could plausibly be a cascade source
-5. `browser_snapshot` — confirm:
-   - The card resolved in step 2 is **still in `ResolvedCard` state** — badge visible, no challenge buttons
-   - It has NOT reverted to `ConfirmedCard` or `PossiblyCard`
-6. `browser_evaluate`:
-   ```js
-   // Confirm the specific card is still resolved — no YES/NO buttons inside it
-   const resolvedCards = [...document.querySelectorAll('[id^="card-"]')]
-     .filter(c => !c.querySelector('button') || c.querySelector('button')?.textContent?.includes('Review anyway'))
-   resolvedCards.length
-   ```
-   Should be ≥ 2 (at least both resolved cards remain resolved).
-7. **Pass condition:** Previously-resolved cards remain resolved after any cascade fires. A card reverting to unresolved state is a failure.
-
----
-
 ## TC-C — LegitimacyComparison renders both columns
 
 **Goal:** For a `PossiblyCard` where both `if_legitimate` and `if_fallacy` fields are present, the two-column comparison renders correctly with non-empty text in both columns.

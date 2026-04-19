@@ -29,12 +29,8 @@ export function useFallacyCollection(
   const getCascades = useCallback(
     (id: string, outcome: Resolution): Cascade[] =>
       rules
-        .filter(r => r.source_id === id && r.when === outcome)
-        .map(r => ({
-          id: r.dependent_id,
-          resolution: r.effect === 'moot' ? 'MOOT' : ('PENDING' as Resolution),
-          reason: r.reason,
-        })),
+        .filter(r => r.source_id === id && r.when === outcome && r.effect === 'moot')
+        .map(r => ({ id: r.dependent_id, resolution: 'MOOT' as Resolution, reason: r.reason })),
     [rules]
   )
 
@@ -43,11 +39,7 @@ export function useFallacyCollection(
       const cascades = getCascades(id, outcome)
       setResolutions(prev => {
         const next = { ...prev, [id]: outcome }
-        for (const c of cascades) {
-          // activate must not overwrite a user decision; moot correctly overrides
-          if (c.resolution === 'PENDING' && (prev[c.id] === 'CONFIRMED' || prev[c.id] === 'CLEARED')) continue
-          next[c.id] = c.resolution
-        }
+        for (const c of cascades) next[c.id] = c.resolution
         return next
       })
       return cascades
