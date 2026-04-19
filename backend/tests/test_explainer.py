@@ -69,28 +69,31 @@ def test_returns_empty_output_when_no_spans():
 
 def test_falls_back_when_payload_exceeds_limit(monkeypatch):
     monkeypatch.setenv("EXPLAINER_MAX_PAYLOAD_CHARS", "100")
-    # Re-import to pick up new env var since constants are module-level
+    # Re-import to pick up new env var since constants are module-level.
+    # try/finally so a failed assertion still restores the un-monkeypatched
+    # module — otherwise downstream tests inherit a polluted explainer with
+    # _MAX_PAYLOAD_CHARS=100.
     import importlib
 
     import pipeline.explainer
     importlib.reload(pipeline.explainer)
-    from pipeline.explainer import generate_content as reloaded_generate_content
+    try:
+        from pipeline.explainer import generate_content as reloaded_generate_content
 
-    big_text = "x" * 500
-    big_spans = [ClassifiedSpan(
-        id="a", text=big_text,
-        start=0, end=500, status="possibly",
-        fallacy_type="ad populum", confidence=0.71,
-    )]
-    mock_client = MagicMock()
-    result = reloaded_generate_content(big_spans, big_text, client=mock_client)
-    assert result.spans[0].id == "a"
-    assert result.spans[0].explanation != ""
-    mock_client.chat.completions.parse.assert_not_called()
-
-    # Reset for other tests
-    monkeypatch.delenv("EXPLAINER_MAX_PAYLOAD_CHARS", raising=False)
-    importlib.reload(pipeline.explainer)
+        big_text = "x" * 500
+        big_spans = [ClassifiedSpan(
+            id="a", text=big_text,
+            start=0, end=500, status="possibly",
+            fallacy_type="ad populum", confidence=0.71,
+        )]
+        mock_client = MagicMock()
+        result = reloaded_generate_content(big_spans, big_text, client=mock_client)
+        assert result.spans[0].id == "a"
+        assert result.spans[0].explanation != ""
+        mock_client.chat.completions.parse.assert_not_called()
+    finally:
+        monkeypatch.delenv("EXPLAINER_MAX_PAYLOAD_CHARS", raising=False)
+        importlib.reload(pipeline.explainer)
 
 def test_passes_max_completion_tokens():
     mock_client = MagicMock()
