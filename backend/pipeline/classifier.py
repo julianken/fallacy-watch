@@ -28,12 +28,18 @@ MPNET_REVISION = "e8c3b32edf5434bc2275fc9bab85f82640a19130"
 logger = logging.getLogger(__name__)
 
 
-def _verify_index_metadata() -> None:
-    # Sidecar is written by data/build_index.py. Asserting embedder_model
-    # match catches the silent failure mode where the index was built with a
-    # different sentence-transformer than the loader is about to instantiate
-    # — dimensions would still match, FAISS would return nearest neighbors,
-    # and classifications would quietly degrade with no error.
+def _verify_index_metadata(index: faiss.Index) -> None:
+    # Sidecar is written by data/build_index.py. Each check catches a different
+    # silent-degradation failure mode:
+    # - embedder_model: different sentence-transformer family with the same
+    #   dimension would still produce nearest neighbors with no error.
+    # - embedder_revision: same family but a different upstream commit; weights
+    #   shift, query embeddings drift apart from indexed ones. Only enforced
+    #   when the sidecar declares one (older sidecars predate the field).
+    # - embedding_dim: must match the FAISS index dimension or .search() fails
+    #   with a cryptic shape error, not a clear classifier-config diagnostic.
+    # - vector_count: rebuilt-but-not-shipped index is the most common dev
+    #   gotcha; sidecar may be ahead of the .index file (or vice versa).
     meta_path = DATA_DIR / "logical_fallacy.index.meta.json"
     if not meta_path.exists():
         warnings.warn(
@@ -44,6 +50,7 @@ def _verify_index_metadata() -> None:
         )
         return
     meta = json.loads(meta_path.read_text())
+
     indexed_embedder = meta.get("embedder_model")
     if indexed_embedder != EMBEDDER_MODEL:
         raise RuntimeError(
@@ -52,14 +59,38 @@ def _verify_index_metadata() -> None:
             f"python data/build_index.py"
         )
 
+    indexed_revision = meta.get("embedder_revision")
+    if indexed_revision is not None and indexed_revision != MPNET_REVISION:
+        raise RuntimeError(
+            f"FAISS index was built with embedder revision "
+            f"{indexed_revision!r} but classifier pins {MPNET_REVISION!r}. "
+            f"Rebuild the index: python data/build_index.py"
+        )
+
+    indexed_dim = meta.get("embedding_dim")
+    if indexed_dim is not None and indexed_dim != index.d:
+        raise RuntimeError(
+            f"FAISS index sidecar declares embedding_dim={indexed_dim} but "
+            f"the loaded index reports dim={index.d}. Rebuild the index: "
+            f"python data/build_index.py"
+        )
+
+    indexed_count = meta.get("vector_count")
+    if indexed_count is not None and indexed_count != index.ntotal:
+        raise RuntimeError(
+            f"FAISS index sidecar declares vector_count={indexed_count} but "
+            f"the loaded index reports ntotal={index.ntotal}. Rebuild the "
+            f"index: python data/build_index.py"
+        )
+
 
 @lru_cache(maxsize=1)
 def _load_resources():
-    _verify_index_metadata()
     device = "cuda" if torch.cuda.is_available() else "cpu"
     logger.info("sentence-transformers device: %s", device)
     model = SentenceTransformer(EMBEDDER_MODEL, device=device, revision=MPNET_REVISION)
     index = faiss.read_index(str(DATA_DIR / "logical_fallacy.index"))
+    _verify_index_metadata(index)
     labels = json.loads((DATA_DIR / "logical_fallacy_labels.json").read_text())
     return model, index, labels
 
