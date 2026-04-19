@@ -26,9 +26,12 @@ FALLACY_LABELS: list[str] = sorted(set(json.loads(
 def _reset_rate_limiter():
     # slowapi's in-memory storage persists across tests within a process and
     # all tests use the same default client IP (127.0.0.1). Reset the limiter
-    # state before every test so they don't poison each other.
+    # state before every test so they don't poison each other. Use the public
+    # Limiter.reset() rather than reaching into ._storage.storage — the
+    # in-memory backend also tracks expirations/events/locks beside the
+    # counter dict, and a moving-window strategy uses different state
+    # entirely. Limiter.reset() delegates to the storage's own reset(), which
+    # clears all of those in one shot.
     from main import app
-    storage = app.state.limiter._storage
-    if hasattr(storage, "storage"):
-        storage.storage.clear()
+    app.state.limiter.reset()
     yield
