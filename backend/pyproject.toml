@@ -1,0 +1,26 @@
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",     # pycodestyle errors
+    "F",     # pyflakes
+    "I",     # isort
+    "B",     # flake8-bugbear
+    "UP",    # pyupgrade
+    "S",     # flake8-bandit (security)
+    "ASYNC", # flake8-async
+    "PL",    # pylint (subset)
+]
+ignore = [
+    "S101",    # assert used — fine in tests
+    "PLR0913", # too many args — opinions vary
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "S105", "S106"]  # assert + fake passwords are fine in tests
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
