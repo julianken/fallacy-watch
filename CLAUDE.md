@@ -43,6 +43,23 @@ cd frontend
 npx vitest run
 ```
 
+### Pre-release checks
+
+CI runs `pytest -v -m "not slow"` — the `slow` marker is reserved for tests
+that hit external services (real OpenAI API). Before cutting a release, run
+the slow tier locally to catch contract drift between our `ExplainerOutput`
+schema and OpenAI structured outputs:
+
+```bash
+cd backend
+source .venv/bin/activate
+OPENAI_API_KEY=sk-... pytest -v -m slow tests/test_explainer.py
+```
+
+Tests gated by `@pytest.mark.skipif(not os.environ.get("OPENAI_API_KEY"), ...)`
+auto-skip when the key is absent, so the same command is safe in any
+environment.
+
 ## Environment variables
 
 ```
