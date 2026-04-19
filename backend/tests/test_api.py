@@ -4,6 +4,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from models.span import (
+    ClassifiedSpan,
     ExplainerChallenge,
     ExplainerOutput,
     ExplainerQuestion,
@@ -34,9 +35,11 @@ MOCK_SEGMENTS = SegmentationResult(
     sentence_count=1,
 )
 EMPTY_SEGMENTS = SegmentationResult(spans=[], sentence_count=1)
-MOCK_CLASSIFIED = [{"text": "All scientists lie.", "start": 0, "end": 18,
-                    "fallacy_type": "Faulty Generalization", "confidence": 0.91,
-                    "status": "confirmed"}]
+MOCK_CLASSIFIED = [ClassifiedSpan(
+    text="All scientists lie.", start=0, end=18,
+    fallacy_type="Faulty Generalization", confidence=0.91,
+    status="confirmed",
+)]
 
 @pytest.mark.asyncio
 async def test_analyze_returns_spans():
