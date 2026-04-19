@@ -1,0 +1,6 @@
+# Exclude frontend + e2e from GitHub's linguist detection so the NLP
+# pipeline (Python) is shown as the repo's primary language instead of
+# the Vite/Playwright TypeScript that dominates by byte count. The
+# backend is the distinctive code; the frontend is a thin SPA over it.
+frontend/** linguist-detectable=false
+e2e/** linguist-detectable=false
